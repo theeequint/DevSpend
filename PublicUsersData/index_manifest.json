@@ -1,13 +1,13 @@
 {
   "schemaVersion": "1.0.0",
   "maxUsersPerFile": 200,
-  "totalRegisteredUsers": 1,
+  "totalRegisteredUsers": 2,
   "activeWriteShard": "users_shard_001.json",
   "shards": [
     {
       "fileName": "users_shard_001.json",
-      "userCount": 1,
-      "updatedAt": "2026-01-01T00:00:00.000Z"
+      "userCount": 2,
+      "updatedAt": "2026-11-08T16:29:17.030Z"
     }
   ]
 }
