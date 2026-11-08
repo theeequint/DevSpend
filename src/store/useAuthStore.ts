@@ -1,5 +1,6 @@
 // ============================================================
 // DevSpend — Cryptographic Authentication Store (Zustand)
+// Strict Username + Password ONLY • GitHub Sharded Pipeline
 // ============================================================
 
 import { create } from 'zustand';
@@ -8,10 +9,10 @@ import {
   registerWithCredentials,
   loginWithCredentials,
   loginWithDemo,
-  loginWithSocialOAuth,
   getVerifiedCurrentSession,
   terminateSession,
 } from '../services/authService';
+import { getShardManifest } from '../services/userShardService';
 
 interface AuthState {
   currentUser: User | null;
@@ -20,28 +21,17 @@ interface AuthState {
   isInitializing: boolean;
   authError: string | null;
   lockoutSeconds: number;
-  oauthModalOpen: boolean;
-  oauthTargetProvider: 'google' | 'github' | null;
+  shardSyncStatus: 'synced' | 'syncing' | 'offline';
 
   // Actions
   initAuth: () => Promise<void>;
   login: (identifier: string, password: string) => Promise<boolean>;
-  register: (username: string, email: string, password: string) => Promise<boolean>;
+  register: (username: string, password: string, confirmPassword?: string) => Promise<boolean>;
   loginDemo: () => Promise<boolean>;
-  loginOAuth: (
-    provider: 'google' | 'github',
-    profile: {
-      email: string;
-      displayName: string;
-      avatarUrl?: string;
-      username?: string;
-    }
-  ) => Promise<boolean>;
-  openOAuthModal: (provider: 'google' | 'github') => void;
-  closeOAuthModal: () => void;
   logout: () => void;
   clearError: () => void;
   setLockoutSeconds: (seconds: number) => void;
+  syncShards: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -51,18 +41,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isInitializing: true,
   authError: null,
   lockoutSeconds: 0,
-  oauthModalOpen: false,
-  oauthTargetProvider: null,
+  shardSyncStatus: 'synced',
 
   initAuth: async () => {
     try {
       set({ isInitializing: true, authError: null });
+      // Fetch latest shard manifest in background
+      getShardManifest()
+        .then(() => set({ shardSyncStatus: 'synced' }))
+        .catch(() => set({ shardSyncStatus: 'offline' }));
+
       const verifiedSession = await getVerifiedCurrentSession();
       if (verifiedSession) {
         const user: User = {
           id: verifiedSession.userId,
           username: verifiedSession.username,
-          email: verifiedSession.email,
           displayName: verifiedSession.displayName,
           avatarUrl: verifiedSession.avatarUrl,
           authProvider: verifiedSession.authProvider,
@@ -95,7 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   login: async (identifier, password) => {
     try {
-      set({ authError: null });
+      set({ authError: null, shardSyncStatus: 'syncing' });
       const { user, session } = await loginWithCredentials(identifier, password);
       set({
         currentUser: user,
@@ -103,32 +96,44 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         authError: null,
         lockoutSeconds: 0,
+        shardSyncStatus: 'synced',
       });
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed. Please check credentials.';
-      // Check if message has cooldown
       const match = msg.match(/(\d+)s/);
       const cooldown = match ? parseInt(match[1], 10) : 0;
-      set({ authError: msg, lockoutSeconds: cooldown });
+      set({
+        authError: msg,
+        lockoutSeconds: cooldown,
+        shardSyncStatus: 'synced',
+      });
       return false;
     }
   },
 
-  register: async (username, email, password) => {
+  register: async (username, password, confirmPassword) => {
     try {
-      set({ authError: null });
-      const { user, session } = await registerWithCredentials(username, email, password);
+      set({ authError: null, shardSyncStatus: 'syncing' });
+      const { user, session } = await registerWithCredentials(
+        username,
+        password,
+        confirmPassword
+      );
       set({
         currentUser: user,
         session,
         isAuthenticated: true,
         authError: null,
+        shardSyncStatus: 'synced',
       });
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Registration failed.';
-      set({ authError: msg });
+      set({
+        authError: msg,
+        shardSyncStatus: 'synced',
+      });
       return false;
     }
   },
@@ -151,32 +156,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  loginOAuth: async (provider, profile) => {
-    try {
-      set({ authError: null, oauthModalOpen: false });
-      const { user, session } = await loginWithSocialOAuth(provider, profile);
-      set({
-        currentUser: user,
-        session,
-        isAuthenticated: true,
-        authError: null,
-      });
-      return true;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Social OAuth failed.';
-      set({ authError: msg });
-      return false;
-    }
-  },
-
-  openOAuthModal: (provider) => {
-    set({ oauthModalOpen: true, oauthTargetProvider: provider, authError: null });
-  },
-
-  closeOAuthModal: () => {
-    set({ oauthModalOpen: false, oauthTargetProvider: null });
-  },
-
   logout: () => {
     terminateSession();
     set({
@@ -190,4 +169,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   clearError: () => set({ authError: null }),
 
   setLockoutSeconds: (seconds: number) => set({ lockoutSeconds: seconds }),
+
+  syncShards: async () => {
+    try {
+      set({ shardSyncStatus: 'syncing' });
+      await getShardManifest();
+      set({ shardSyncStatus: 'synced' });
+    } catch {
+      set({ shardSyncStatus: 'offline' });
+    }
+  },
 }));

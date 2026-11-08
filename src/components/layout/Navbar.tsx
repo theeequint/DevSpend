@@ -19,6 +19,7 @@ import {
   User,
   Shield,
   Home,
+  Database,
 } from 'lucide-react';
 import { useSpendStore, useActiveProject, useUserProjects } from '../../store/useSpendStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -40,7 +41,7 @@ export const Navbar: React.FC = () => {
     updateProject,
   } = useSpendStore();
 
-  const { currentUser, logout } = useAuthStore();
+  const { currentUser, logout, shardSyncStatus, syncShards } = useAuthStore();
   const userProjects = useUserProjects(currentUser?.id);
   const activeProject = useActiveProject(currentUser?.id);
 
@@ -276,6 +277,28 @@ export const Navbar: React.FC = () => {
             </kbd>
           </button>
 
+          {/* GitHub Shard Sync Status Pill */}
+          <button
+            onClick={() => syncShards()}
+            className={`hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-mono transition-all ${
+              shardSyncStatus === 'syncing'
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 animate-pulse'
+                : shardSyncStatus === 'synced'
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+            }`}
+            title="GitHub-Backed User Shards (Max 200/file). Click to force sync."
+          >
+            <Database size={11} className={shardSyncStatus === 'syncing' ? 'animate-spin' : ''} />
+            <span>
+              {shardSyncStatus === 'syncing'
+                ? 'SYNCING...'
+                : shardSyncStatus === 'synced'
+                ? 'SHARDS: SYNCED'
+                : 'SHARDS: LOCAL'}
+            </span>
+          </button>
+
           {/* Theme Toggle */}
           <button
             onClick={toggleDarkMode}
@@ -334,7 +357,7 @@ export const Navbar: React.FC = () => {
                     </p>
                     <div className="mt-1 flex items-center gap-1 text-[10px] font-mono text-emerald-400">
                       <Shield size={10} />
-                      <span>{currentUser?.authProvider.toUpperCase()} AUTH</span>
+                      <span>{currentUser?.authProvider?.toUpperCase() || 'PASSWORD'} AUTH</span>
                     </div>
                   </div>
 

@@ -24,6 +24,8 @@ import {
   normalizeToMonthly,
 } from '../../utils/formatters';
 import { testApiConnection } from '../../services/aiService';
+import { getGitHubToken, setGitHubToken, getShardManifest } from '../../services/userShardService';
+import { useAuthStore } from '../../store/useAuthStore';
 import { AiProvider, Currency, ProjectStatus } from '../../types';
 
 export const SettingsView: React.FC = () => {
@@ -38,11 +40,25 @@ export const SettingsView: React.FC = () => {
     importFullState,
     resetToSeedData,
   } = useSpendStore();
+  const { shardSyncStatus, syncShards } = useAuthStore();
 
   // API Key Visibility toggles
   const [showGemini, setShowGemini] = useState(false);
   const [showGroq, setShowGroq] = useState(false);
   const [showOpenRouter, setShowOpenRouter] = useState(false);
+  const [githubToken, setGithubTokenState] = useState(getGitHubToken());
+  const [showGithubToken, setShowGithubToken] = useState(false);
+  const [tokenSaved, setTokenSaved] = useState(false);
+  const [activeShardName, setActiveShardName] = useState('users_shard_001.json');
+  const [totalUsersCount, setTotalUsersCount] = useState(1);
+
+  // Load manifest stats on mount
+  React.useEffect(() => {
+    getShardManifest().then((m) => {
+      setActiveShardName(m.activeWriteShard);
+      setTotalUsersCount(m.totalRegisteredUsers);
+    }).catch(() => {});
+  }, []);
 
   // Connection testing feedback
   const [testStatus, setTestStatus] = useState<{
@@ -532,6 +548,104 @@ export const SettingsView: React.FC = () => {
           />
         </div>
       </form>
+
+      {/* ─────────────────────────────────────────────────────────────
+          SECTION: GITHUB-BACKED USER SHARDS DATABASE (PublicUsersData/)
+      ───────────────────────────────────────────────────────────── */}
+      <div className="card p-6 space-y-5">
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <Database size={16} />
+            </span>
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-100">
+                GitHub-Backed Sharded User Database (`PublicUsersData/`)
+              </h2>
+              <p className="text-xs text-zinc-400">
+                Sharded multi-tenant user storage (strictly 200 users max per shard file) with bi-directional Git sync.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => syncShards()}
+              className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <RotateCcw size={13} className={shardSyncStatus === 'syncing' ? 'animate-spin text-amber-400' : 'text-emerald-400'} />
+              <span>{shardSyncStatus === 'syncing' ? 'Syncing...' : 'Force Sync Now'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Database Inventory Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="p-3 rounded-lg bg-zinc-950/70 border border-zinc-800 text-center font-mono">
+            <span className="block text-[10px] text-zinc-500 uppercase tracking-wider">Repository</span>
+            <span className="text-xs font-bold text-zinc-200">theeequint/DevSpend</span>
+          </div>
+
+          <div className="p-3 rounded-lg bg-zinc-950/70 border border-zinc-800 text-center font-mono">
+            <span className="block text-[10px] text-zinc-500 uppercase tracking-wider">Active Write Shard</span>
+            <span className="text-xs font-bold text-emerald-400">{activeShardName}</span>
+          </div>
+
+          <div className="p-3 rounded-lg bg-zinc-950/70 border border-zinc-800 text-center font-mono">
+            <span className="block text-[10px] text-zinc-500 uppercase tracking-wider">Total Registered Users</span>
+            <span className="text-xs font-bold text-zinc-200">{totalUsersCount} (Max 200/file)</span>
+          </div>
+        </div>
+
+        {/* GitHub PAT Input */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setGitHubToken(githubToken);
+            setTokenSaved(true);
+            setTimeout(() => setTokenSaved(false), 2000);
+          }}
+          className="space-y-3 pt-2"
+        >
+          <div className="flex items-center justify-between text-xs">
+            <label className="text-zinc-300 font-medium">GitHub Personal Access Token (for auto-commits)</label>
+            <span className="text-[11px] text-zinc-500 font-mono">Permissions: repo (contents write)</span>
+          </div>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type={showGithubToken ? 'text' : 'password'}
+                value={githubToken}
+                onChange={(e) => setGithubTokenState(e.target.value)}
+                placeholder="ghp_..."
+                className="input pr-10 text-xs font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowGithubToken(!showGithubToken)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+              >
+                {showGithubToken ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+            <button
+              type="submit"
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-medium transition-colors shrink-0 cursor-pointer flex items-center gap-1.5"
+            >
+              {tokenSaved ? (
+                <>
+                  <Check size={14} /> Saved!
+                </>
+              ) : (
+                <>
+                  <Save size={14} /> Update Token
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
 
       {/* ─────────────────────────────────────────────────────────────
           SECTION 3: DATA PORTABILITY, BACKUPS & RESTORE

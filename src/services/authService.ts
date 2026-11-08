@@ -1,12 +1,12 @@
 // ============================================================
 // DevSpend — Cryptographic Authentication Service
+// Strict Username + Password ONLY • GitHub-Backed Shards
 // ============================================================
 
 import {
   User,
   StoredUserRecord,
   AuthSession,
-  AuthProvider,
 } from '../types';
 import {
   hashPassword,
@@ -20,8 +20,12 @@ import {
   sanitizeInput,
 } from '../utils/security';
 import { generateId, isoNow } from '../utils/formatters';
+import {
+  findUserInShards,
+  appendUserToShards,
+  SEED_DEMO_USER,
+} from './userShardService';
 
-const USERS_STORAGE_KEY = 'devspend_auth_users_v1';
 const SESSION_STORAGE_KEY = 'devspend_auth_session_v1';
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -30,43 +34,13 @@ export const DEMO_USER_ID = 'user_demo';
 export const DEMO_USER: User = {
   id: DEMO_USER_ID,
   username: 'demo_dev',
-  email: 'demo@devspend.io',
   displayName: 'Demo Developer',
-  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
-  authProvider: 'demo',
-  createdAt: '2024-01-01T00:00:00Z',
+  authProvider: 'password',
+  createdAt: '2026-01-01T00:00:00.000Z',
 };
 
 // ============================================================
-// User Registry Helpers
-// ============================================================
-function getStoredUsers(): StoredUserRecord[] {
-  try {
-    const raw = localStorage.getItem(USERS_STORAGE_KEY);
-    const users: StoredUserRecord[] = raw ? JSON.parse(raw) : [];
-    // Ensure demo user exists
-    if (!users.some((u) => u.id === DEMO_USER_ID)) {
-      users.push({
-        ...DEMO_USER,
-      });
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-    }
-    return users;
-  } catch {
-    return [DEMO_USER];
-  }
-}
-
-function saveStoredUsers(users: StoredUserRecord[]): void {
-  try {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-  } catch {
-    // Ignore quota issues
-  }
-}
-
-// ============================================================
-// Validation Helpers
+// Validation Helpers (Username + Password Only)
 // ============================================================
 export function validateUsername(username: string): { valid: boolean; error?: string } {
   const sanitized = username.trim().toLowerCase();
@@ -79,36 +53,26 @@ export function validateUsername(username: string): { valid: boolean; error?: st
   return { valid: true };
 }
 
-export function validateEmail(email: string): { valid: boolean; error?: string } {
-  const sanitized = email.trim().toLowerCase();
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!re.test(sanitized)) {
-    return { valid: false, error: 'Please enter a valid RFC-compliant email address' };
-  }
-  return { valid: true };
-}
-
 // ============================================================
 // Auth Actions
 // ============================================================
 
 /**
- * Register a new user with PBKDF2 password hashing & 16-byte cryptographic salt
+ * Register a new user with PBKDF2 password hashing & 16-byte cryptographic salt.
+ * Directly appends and commits to PublicUsersData/ shards.
  */
 export async function registerWithCredentials(
   rawUsername: string,
-  rawEmail: string,
-  rawPassword: string
+  rawPassword: string,
+  rawConfirmPassword?: string
 ): Promise<{ user: User; session: AuthSession }> {
   const username = sanitizeInput(rawUsername).toLowerCase();
-  const email = sanitizeInput(rawEmail).toLowerCase();
 
+  // 1. Username validation
   const uVal = validateUsername(username);
   if (!uVal.valid) throw new Error(uVal.error);
 
-  const eVal = validateEmail(email);
-  if (!eVal.valid) throw new Error(eVal.error);
-
+  // 2. Password strength validation
   const pStrength = checkPasswordStrength(rawPassword);
   if (!pStrength.isValid) {
     throw new Error(
@@ -116,38 +80,36 @@ export async function registerWithCredentials(
     );
   }
 
-  const users = getStoredUsers();
-  if (users.some((u) => u.username === username)) {
-    throw new Error('This username is already taken. Please choose another.');
-  }
-  if (users.some((u) => u.email === email)) {
-    throw new Error('An account with this email address already exists.');
+  // 3. Confirm password validation
+  if (rawConfirmPassword !== undefined && rawPassword !== rawConfirmPassword) {
+    throw new Error('Passwords do not match. Please re-enter your password.');
   }
 
-  // Derive PBKDF2 hash with 100,000 rounds
+  // 4. Derive PBKDF2 hash with 100,000 rounds and 16-byte salt
   const { hash, salt } = await hashPassword(rawPassword);
 
   const userId = `user_${generateId()}`;
   const newUserRecord: StoredUserRecord = {
     id: userId,
     username,
-    email,
     displayName: username,
     authProvider: 'password',
     passwordHash: hash,
     salt,
     createdAt: isoNow(),
+    updatedAt: isoNow(),
   };
 
-  users.push(newUserRecord);
-  saveStoredUsers(users);
+  // 5. Append to GitHub-backed PublicUsersData shards (max 200 users per file)
+  await appendUserToShards(newUserRecord);
 
-  // Generate signed session
+  // 6. Generate cryptographically signed HMAC-SHA256 session
   return await issueSession(newUserRecord);
 }
 
 /**
- * Sign in using username/email and password with brute-force lockout
+ * Sign in using username and password with brute-force lockout.
+ * Verified directly against PublicUsersData/ shard files.
  */
 export async function loginWithCredentials(
   identifier: string,
@@ -163,11 +125,8 @@ export async function loginWithCredentials(
     );
   }
 
-  // 2. Lookup user by username or email
-  const users = getStoredUsers();
-  const userRecord = users.find(
-    (u) => u.username === normId || u.email === normId
-  );
+  // 2. Lookup user record from PublicUsersData/ shards
+  const userRecord = await findUserInShards(normId);
 
   if (!userRecord || !userRecord.passwordHash || !userRecord.salt) {
     // Record failed attempt
@@ -179,7 +138,7 @@ export async function loginWithCredentials(
     throw new Error('Invalid credentials.');
   }
 
-  // 3. Verify cryptographic password hash
+  // 3. Verify cryptographic password hash via PBKDF2 Web Crypto API
   const isValid = await verifyPassword(
     rawPassword,
     userRecord.passwordHash,
@@ -205,69 +164,7 @@ export async function loginWithCredentials(
  * Sign in as Pre-Populated Demo Account
  */
 export async function loginWithDemo(): Promise<{ user: User; session: AuthSession }> {
-  const users = getStoredUsers();
-  let demoRecord = users.find((u) => u.id === DEMO_USER_ID);
-  if (!demoRecord) {
-    demoRecord = { ...DEMO_USER };
-    users.push(demoRecord);
-    saveStoredUsers(users);
-  }
-
-  return await issueSession(demoRecord);
-}
-
-/**
- * Sign in with Social OAuth (Google or GitHub)
- */
-export async function loginWithSocialOAuth(
-  provider: 'google' | 'github',
-  profile: {
-    email: string;
-    displayName: string;
-    avatarUrl?: string;
-    username?: string;
-  }
-): Promise<{ user: User; session: AuthSession }> {
-  const email = sanitizeInput(profile.email).toLowerCase();
-  const users = getStoredUsers();
-
-  let userRecord = users.find((u) => u.email === email);
-
-  if (!userRecord) {
-    // Create new account linked to social provider
-    const baseUsername = (
-      profile.username ||
-      profile.displayName.toLowerCase().replace(/[^a-z0-9]/g, '_') ||
-      email.split('@')[0]
-    ).slice(0, 20);
-
-    let username = baseUsername;
-    let counter = 1;
-    while (users.some((u) => u.username === username)) {
-      username = `${baseUsername}_${counter++}`;
-    }
-
-    userRecord = {
-      id: `user_${provider}_${generateId()}`,
-      username,
-      email,
-      displayName: sanitizeInput(profile.displayName) || username,
-      avatarUrl: profile.avatarUrl,
-      authProvider: provider,
-      createdAt: isoNow(),
-    };
-
-    users.push(userRecord);
-    saveStoredUsers(users);
-  } else {
-    // Update avatar if provided
-    if (profile.avatarUrl && profile.avatarUrl !== userRecord.avatarUrl) {
-      userRecord.avatarUrl = profile.avatarUrl;
-      saveStoredUsers(users);
-    }
-  }
-
-  return await issueSession(userRecord);
+  return await issueSession(SEED_DEMO_USER);
 }
 
 /**
@@ -282,7 +179,6 @@ async function issueSession(
   const user: User = {
     id: userRecord.id,
     username: userRecord.username,
-    email: userRecord.email,
     displayName: userRecord.displayName || userRecord.username,
     avatarUrl: userRecord.avatarUrl,
     authProvider: userRecord.authProvider,
@@ -292,7 +188,6 @@ async function issueSession(
   const sessionPayload = {
     userId: user.id,
     username: user.username,
-    email: user.email,
     displayName: user.displayName,
     avatarUrl: user.avatarUrl,
     authProvider: user.authProvider,

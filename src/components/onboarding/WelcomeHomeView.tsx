@@ -154,7 +154,7 @@ export const WelcomeHomeView: React.FC = () => {
                 Welcome back, {currentUser?.displayName || currentUser?.username}
               </h1>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                {currentUser?.authProvider.toUpperCase()}
+                {currentUser?.authProvider?.toUpperCase() || 'PASSWORD'}
               </span>
             </div>
             <p className="text-xs text-zinc-400 font-mono mt-0.5">

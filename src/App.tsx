@@ -91,12 +91,12 @@ export const AppContent: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-500 font-mono">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>DevSpend v2.0.0 — Multi-Tenant Developer FinOps Engine</span>
+            <span>DevSpend v2.1.0 — GitHub Sharded FinOps Engine (`PublicUsersData/`)</span>
           </div>
           <div className="flex items-center gap-4">
-            <span>Press ⌘K for Command Palette</span>
+            <span>200 Users/Shard Pipeline</span>
             <span>•</span>
-            <span>Cryptographic Session Verified</span>
+            <span>PBKDF2-100k + HMAC-SHA256</span>
           </div>
         </div>
       </footer>

@@ -47,14 +47,14 @@ export type AppView =
   | 'settings';
 
 // ============================================================
-// Authentication & User Model
+// Authentication & User Model (Strict Username + Password Only)
 // ============================================================
-export type AuthProvider = 'password' | 'google' | 'github' | 'demo';
+export type AuthProvider = 'password' | 'demo';
 
 export interface User {
   id: string;
   username: string;
-  email: string;
+  email?: string;
   displayName: string;
   avatarUrl?: string;
   authProvider: AuthProvider;
@@ -64,25 +64,51 @@ export interface User {
 export interface StoredUserRecord {
   id: string;
   username: string;
-  email: string;
+  email?: string;
   displayName: string;
   avatarUrl?: string;
   authProvider: AuthProvider;
-  passwordHash?: string;
-  salt?: string;
+  passwordHash: string;
+  salt: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface AuthSession {
   userId: string;
   username: string;
-  email: string;
+  email?: string;
   displayName: string;
   avatarUrl?: string;
   authProvider: AuthProvider;
   issuedAt: number;
   expiresAt: number;
   token: string;
+}
+
+// ============================================================
+// GitHub-Backed Sharded User Database (Max 200 Users Per Shard)
+// ============================================================
+export interface ShardMeta {
+  fileName: string;
+  userCount: number;
+  updatedAt: string;
+}
+
+export interface ShardManifest {
+  schemaVersion: string;
+  maxUsersPerFile: number;
+  totalRegisteredUsers: number;
+  activeWriteShard: string;
+  shards: ShardMeta[];
+}
+
+export interface UserShardFile {
+  shardId: string;
+  userCount: number;
+  createdAt: string;
+  updatedAt: string;
+  users: StoredUserRecord[];
 }
 
 export interface PasswordStrength {

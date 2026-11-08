@@ -1,0 +1,18 @@
+{
+  "shardId": "users_shard_001",
+  "userCount": 1,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "users": [
+    {
+      "id": "user_demo",
+      "username": "demo_dev",
+      "displayName": "Demo Developer",
+      "authProvider": "password",
+      "passwordHash": "075bb66ef3e81c58ec892ddaeeaaa589422e49323ca234741d6aee3b9b1064be",
+      "salt": "400ad07ab7b1994fcefd12193791c855",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ]
+}
