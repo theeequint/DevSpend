@@ -62,6 +62,15 @@ export interface User {
   createdAt: string;
 }
 
+export interface UserDataSnapshot {
+  projects: Project[];
+  expenses: ExpenseItem[];
+  revenues: RevenueItem[];
+  stakeholders: Stakeholder[];
+  fundingRounds: FundingRound[];
+  lastSyncedAt: string;
+}
+
 export interface StoredUserRecord {
   id: string;
   username: string;
@@ -73,6 +82,7 @@ export interface StoredUserRecord {
   salt: string;
   createdAt: string;
   updatedAt?: string;
+  userDataSnapshot?: UserDataSnapshot;
 }
 
 export interface AuthSession {

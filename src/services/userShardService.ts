@@ -3,7 +3,7 @@
 // Strictly enforces 200 users max per shard in PublicUsersData/
 // ============================================================
 
-import { ShardManifest, UserShardFile, StoredUserRecord } from '../types';
+import { ShardManifest, UserShardFile, StoredUserRecord, UserDataSnapshot } from '../types';
 import { isoNow } from '../utils/formatters';
 
 const GITHUB_OWNER = 'theeequint';
@@ -349,4 +349,44 @@ export async function syncFileToGitHub(
     console.warn(`Failed to sync ${filePath} to GitHub:`, err);
     return false;
   }
+}
+
+/**
+ * Update a user's snapshot (projects, expenses, revenues, stakeholders, funding rounds)
+ * inside the appropriate shard file in local cache and push to GitHub.
+ */
+export async function syncUserDataSnapshot(
+  userId: string,
+  snapshot: UserDataSnapshot
+): Promise<boolean> {
+  try {
+    const manifest = await getShardManifest();
+    for (const s of manifest.shards) {
+      const shard = await getUserShard(s.fileName);
+      const userIndex = shard.users.findIndex((u) => u.id === userId);
+      if (userIndex !== -1) {
+        shard.users[userIndex].userDataSnapshot = snapshot;
+        shard.users[userIndex].updatedAt = isoNow();
+        shard.updatedAt = isoNow();
+
+        // Save to cache
+        localStorage.setItem(
+          `${SHARD_CACHE_PREFIX}${s.fileName}`,
+          JSON.stringify(shard)
+        );
+
+        // Commit to GitHub in background
+        syncFileToGitHub(
+          `PublicUsersData/${s.fileName}`,
+          JSON.stringify(shard, null, 2),
+          `chore(sync): update user snapshot for ${shard.users[userIndex].username}`
+        ).catch(() => {});
+
+        return true;
+      }
+    }
+  } catch {
+    // Offline or fallback
+  }
+  return false;
 }
