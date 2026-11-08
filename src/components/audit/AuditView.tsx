@@ -15,6 +15,7 @@ import {
   Check,
   AlertTriangle,
   Lightbulb,
+  Trash2,
 } from 'lucide-react';
 import {
   useActiveProject,
@@ -23,6 +24,7 @@ import {
   useProjectAudit,
   useSpendStore,
 } from '../../store/useSpendStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import {
   formatCurrency,
   formatPercent,
@@ -43,7 +45,8 @@ export const AuditView: React.FC = () => {
   const expenses = useProjectExpenses(activeProject?.id ?? '');
   const debugSessions = useProjectDebugSessions(activeProject?.id ?? '');
   const auditReport = useProjectAudit(activeProject?.id ?? '');
-  const { settings, addAuditReport, applyRecommendation } = useSpendStore();
+  const { settings, addAuditReport, applyRecommendation, deleteAuditReport } = useSpendStore();
+  const { currentUser } = useAuthStore();
 
   const currency = activeProject?.currency ?? 'USD';
   const hourlyRate = activeProject?.hourlyDevRate ?? 60;
@@ -83,6 +86,7 @@ export const AuditView: React.FC = () => {
       const report = await runAiAudit(
         {
           projectId: activeProject.id,
+          ownerUserId: currentUser?.id || activeProject.ownerUserId || 'user_demo',
           projectName: activeProject.name,
           expenses,
           debugSessions,
@@ -202,21 +206,32 @@ export const AuditView: React.FC = () => {
               </div>
             </div>
 
-            <button
-              onClick={handleTriggerAudit}
-              disabled={loading}
-              className="btn-primary text-xs py-2 px-4 shadow-lg shadow-violet-950/40 shrink-0"
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" /> Analyzing Ledger...
-                </>
-              ) : (
-                <>
-                  <Sparkles size={14} /> Re-run AI Audit
-                </>
+            <div className="flex items-center gap-2">
+              {auditReport && (
+                <button
+                  onClick={() => deleteAuditReport(auditReport.id)}
+                  title="Clear Audit Report"
+                  className="p-2 rounded-lg border border-zinc-800 hover:bg-zinc-800 text-zinc-400 hover:text-rose-400 transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
               )}
-            </button>
+              <button
+                onClick={handleTriggerAudit}
+                disabled={loading}
+                className="btn-primary text-xs py-2 px-4 shadow-lg shadow-violet-950/40 shrink-0"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Analyzing Ledger...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={14} /> Re-run AI Audit
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Recommendations List */}

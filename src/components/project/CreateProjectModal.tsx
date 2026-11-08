@@ -12,6 +12,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useSpendStore } from '../../store/useSpendStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { Currency, ProjectStatus } from '../../types';
 
 interface CreateProjectModalProps {
@@ -92,6 +93,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   onClose,
 }) => {
   const { addProject, setCreateProjectModalOpen } = useSpendStore();
+  const { currentUser } = useAuthStore();
 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
@@ -160,6 +162,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     if (!name.trim()) return;
 
     addProject({
+      ownerUserId: currentUser?.id || 'user_demo',
       name: name.trim(),
       slug: slug.trim() || name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
       description: description.trim() || 'Software engineering project on DevSpend',

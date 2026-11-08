@@ -1,5 +1,6 @@
 // ============================================================
 // DevSpend — Zustand Store (persistent to localStorage)
+// Multi-Tenant Isolation & Cascading Project Deletion
 // ============================================================
 
 import { create } from 'zustand';
@@ -12,6 +13,7 @@ import {
   AiAuditReport,
   AppSettings,
   SimulatorParams,
+  AppView,
 } from '../types';
 import {
   SEED_PROJECTS,
@@ -26,7 +28,7 @@ import { generateId, isoNow, normalizeToMonthly } from '../utils/formatters';
 // Store shape
 // ============================================================
 interface DevSpendState {
-  // Data
+  // Multi-tenant data
   projects: Project[];
   expenses: ExpenseItem[];
   debugSessions: DebugSession[];
@@ -36,6 +38,7 @@ interface DevSpendState {
   // Live debug timer
   activeDebugTimer: {
     projectId: string;
+    ownerUserId: string;
     startedAt: number; // ms timestamp
     running: boolean;
     description: string;
@@ -45,15 +48,12 @@ interface DevSpendState {
   } | null;
 
   // UI state (not persisted)
-  activeView:
-    | 'dashboard'
-    | 'ledger'
-    | 'simulator'
-    | 'audit'
-    | 'settings';
+  activeView: AppView;
   commandPaletteOpen: boolean;
   addExpenseModalOpen: boolean;
   createProjectModalOpen: boolean;
+  deleteProjectModalOpen: boolean;
+  projectToDeleteId: string | null;
   simulatorParams: SimulatorParams;
 
   // ── Project actions ─────────────────────────────────────────
@@ -61,11 +61,14 @@ interface DevSpendState {
   updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
   setActiveProject: (id: string) => void;
+  setDeleteProjectModal: (open: boolean, projectId?: string | null) => void;
 
   // ── Expense actions ─────────────────────────────────────────
   addExpense: (expense: Omit<ExpenseItem, 'id'>) => string;
   updateExpense: (id: string, updates: Partial<ExpenseItem>) => void;
   deleteExpense: (id: string) => void;
+  deleteExpenses: (ids: string[]) => void;
+  clearProjectExpenses: (projectId: string) => void;
   duplicateExpense: (id: string) => void;
   applyAiOptimization: (
     expenseId: string,
@@ -77,6 +80,7 @@ interface DevSpendState {
   // ── Debug timer actions ─────────────────────────────────────
   startDebugTimer: (params: {
     projectId: string;
+    ownerUserId: string;
     description: string;
     component: string;
     severity: 'low' | 'medium' | 'critical';
@@ -86,9 +90,12 @@ interface DevSpendState {
   stopAndLogDebugTimer: () => void;
   tickDebugTimer: () => void;
   logManualDebugSession: (session: Omit<DebugSession, 'id'>) => void;
+  deleteDebugSession: (id: string) => void;
+  clearProjectDebugSessions: (projectId: string) => void;
 
   // ── AI Audit actions ────────────────────────────────────────
   addAuditReport: (report: AiAuditReport) => void;
+  deleteAuditReport: (id: string) => void;
   applyRecommendation: (reportId: string, recommendationId: string) => void;
 
   // ── Settings ────────────────────────────────────────────────
@@ -96,7 +103,7 @@ interface DevSpendState {
   toggleDarkMode: () => void;
 
   // ── UI actions ───────────────────────────────────────────────
-  setActiveView: (view: DevSpendState['activeView']) => void;
+  setActiveView: (view: AppView) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setAddExpenseModalOpen: (open: boolean) => void;
   setCreateProjectModalOpen: (open: boolean) => void;
@@ -127,6 +134,8 @@ export const useSpendStore = create<DevSpendState>()(
       commandPaletteOpen: false,
       addExpenseModalOpen: false,
       createProjectModalOpen: false,
+      deleteProjectModalOpen: false,
+      projectToDeleteId: null,
       simulatorParams: {
         monthlyActiveUsers: 1000,
         avgTokensPerUser: 5000,
@@ -146,43 +155,68 @@ export const useSpendStore = create<DevSpendState>()(
           projects: [...s.projects, project],
           settings: { ...s.settings, activeProjectId: id },
           activeView: 'dashboard',
+          createProjectModalOpen: false,
         }));
         return id;
       },
 
       updateProject: (id, updates) => {
         set(s => ({
-          projects: s.projects.map(p => p.id === id ? { ...p, ...updates } : p),
+          projects: s.projects.map(p => (p.id === id ? { ...p, ...updates } : p)),
         }));
       },
 
       deleteProject: (id) => {
+        const remainingProjects = get().projects.filter(p => p.id !== id);
+        const currentActive = get().settings.activeProjectId;
+        const newActiveId = currentActive === id
+          ? (remainingProjects[0]?.id ?? '')
+          : currentActive;
+
         set(s => ({
-          projects: s.projects.filter(p => p.id !== id),
+          projects: remainingProjects,
           expenses: s.expenses.filter(e => e.projectId !== id),
           debugSessions: s.debugSessions.filter(d => d.projectId !== id),
           auditReports: s.auditReports.filter(a => a.projectId !== id),
-          settings: s.settings.activeProjectId === id
-            ? { ...s.settings, activeProjectId: s.projects.find(p => p.id !== id)?.id ?? '' }
-            : s.settings,
+          settings: {
+            ...s.settings,
+            activeProjectId: newActiveId,
+          },
+          // If no projects remain, transition automatically to home
+          activeView: remainingProjects.length === 0 ? 'home' : s.activeView,
+          deleteProjectModalOpen: false,
+          projectToDeleteId: null,
         }));
       },
 
       setActiveProject: (id) => {
-        set(s => ({ settings: { ...s.settings, activeProjectId: id } }));
+        set(s => ({
+          settings: { ...s.settings, activeProjectId: id },
+          activeView: s.activeView === 'home' ? 'dashboard' : s.activeView,
+        }));
+      },
+
+      setDeleteProjectModal: (open, projectId = null) => {
+        set({
+          deleteProjectModalOpen: open,
+          projectToDeleteId: projectId,
+        });
       },
 
       // ── Expense actions ───────────────────────────────────────
       addExpense: (expenseData) => {
         const id = `exp_${generateId()}`;
         const expense: ExpenseItem = { ...expenseData, id };
-        set(s => ({ expenses: [...s.expenses, expense] }));
+        set(s => ({
+          expenses: [...s.expenses, expense],
+          addExpenseModalOpen: false,
+        }));
         return id;
       },
 
       updateExpense: (id, updates) => {
         set(s => ({
-          expenses: s.expenses.map(e => e.id === id ? { ...e, ...updates } : e),
+          expenses: s.expenses.map(e => (e.id === id ? { ...e, ...updates } : e)),
         }));
       },
 
@@ -190,17 +224,33 @@ export const useSpendStore = create<DevSpendState>()(
         set(s => ({ expenses: s.expenses.filter(e => e.id !== id) }));
       },
 
+      deleteExpenses: (ids) => {
+        const idSet = new Set(ids);
+        set(s => ({
+          expenses: s.expenses.filter(e => !idSet.has(e.id)),
+        }));
+      },
+
+      clearProjectExpenses: (projectId) => {
+        set(s => ({
+          expenses: s.expenses.filter(e => e.projectId !== projectId),
+        }));
+      },
+
       duplicateExpense: (id) => {
         const existing = get().expenses.find(e => e.id === id);
         if (!existing) return;
         const newId = `exp_${generateId()}`;
         set(s => ({
-          expenses: [...s.expenses, {
-            ...existing,
-            id: newId,
-            title: `${existing.title} (copy)`,
-            date: isoNow(),
-          }],
+          expenses: [
+            ...s.expenses,
+            {
+              ...existing,
+              id: newId,
+              title: `${existing.title} (copy)`,
+              date: isoNow(),
+            },
+          ],
         }));
       },
 
@@ -221,10 +271,11 @@ export const useSpendStore = create<DevSpendState>()(
       },
 
       // ── Debug timer ───────────────────────────────────────────
-      startDebugTimer: ({ projectId, description, component, severity }) => {
+      startDebugTimer: ({ projectId, ownerUserId, description, component, severity }) => {
         set({
           activeDebugTimer: {
             projectId,
+            ownerUserId,
             startedAt: Date.now(),
             running: true,
             description,
@@ -236,22 +287,24 @@ export const useSpendStore = create<DevSpendState>()(
       },
 
       pauseDebugTimer: () => {
-        set(s => s.activeDebugTimer
-          ? { activeDebugTimer: { ...s.activeDebugTimer, running: false } }
-          : {}
+        set(s =>
+          s.activeDebugTimer
+            ? { activeDebugTimer: { ...s.activeDebugTimer, running: false } }
+            : {}
         );
       },
 
       resumeDebugTimer: () => {
-        set(s => s.activeDebugTimer
-          ? {
-              activeDebugTimer: {
-                ...s.activeDebugTimer,
-                running: true,
-                startedAt: Date.now() - (s.activeDebugTimer.elapsedSeconds * 1000),
-              },
-            }
-          : {}
+        set(s =>
+          s.activeDebugTimer
+            ? {
+                activeDebugTimer: {
+                  ...s.activeDebugTimer,
+                  running: true,
+                  startedAt: Date.now() - s.activeDebugTimer.elapsedSeconds * 1000,
+                },
+              }
+            : {}
         );
       },
 
@@ -269,14 +322,15 @@ export const useSpendStore = create<DevSpendState>()(
 
         const project = projects.find(p => p.id === activeDebugTimer.projectId);
         const hourlyRate = project?.hourlyDevRate ?? 60;
-        const durationMinutes = Math.round(activeDebugTimer.elapsedSeconds / 60);
+        const durationMinutes = Math.max(1, Math.round(activeDebugTimer.elapsedSeconds / 60));
         const calculatedCost = (durationMinutes / 60) * hourlyRate;
 
         const session: DebugSession = {
           id: `dbg_${generateId()}`,
           projectId: activeDebugTimer.projectId,
-          bugDescription: activeDebugTimer.description,
-          relatedComponent: activeDebugTimer.component,
+          ownerUserId: activeDebugTimer.ownerUserId || project?.ownerUserId || 'user_demo',
+          bugDescription: activeDebugTimer.description || 'Live Debugging Session',
+          relatedComponent: activeDebugTimer.component || 'Application Module',
           durationMinutes,
           calculatedCost,
           timestamp: isoNow(),
@@ -286,6 +340,7 @@ export const useSpendStore = create<DevSpendState>()(
         const expense: ExpenseItem = {
           id: `exp_${generateId()}`,
           projectId: activeDebugTimer.projectId,
+          ownerUserId: session.ownerUserId,
           title: activeDebugTimer.description || 'Debug Session',
           vendor: 'Self-Time',
           category: 'debugging_tech_debt',
@@ -311,10 +366,28 @@ export const useSpendStore = create<DevSpendState>()(
         set(s => ({ debugSessions: [...s.debugSessions, session] }));
       },
 
+      deleteDebugSession: (id) => {
+        set(s => ({
+          debugSessions: s.debugSessions.filter(d => d.id !== id),
+        }));
+      },
+
+      clearProjectDebugSessions: (projectId) => {
+        set(s => ({
+          debugSessions: s.debugSessions.filter(d => d.projectId !== projectId),
+        }));
+      },
+
       // ── AI Audit ──────────────────────────────────────────────
       addAuditReport: (report) => {
         set(s => ({
           auditReports: [report, ...s.auditReports.filter(r => r.projectId !== report.projectId)],
+        }));
+      },
+
+      deleteAuditReport: (id) => {
+        set(s => ({
+          auditReports: s.auditReports.filter(r => r.id !== id),
         }));
       },
 
@@ -406,6 +479,7 @@ export const useSpendStore = create<DevSpendState>()(
           auditReports: [SEED_AI_AUDIT],
           settings: DEFAULT_SETTINGS,
           activeDebugTimer: null,
+          activeView: 'dashboard',
         });
       },
     }),
@@ -424,42 +498,62 @@ export const useSpendStore = create<DevSpendState>()(
 );
 
 // ============================================================
-// Selector hooks (memoized derived state - safe against getSnapshot loop)
+// Multi-Tenant Selector Hooks (Safe against getSnapshot loop)
 // ============================================================
-export function useActiveProject(): Project | undefined {
+
+/**
+ * Returns projects scoped to a specific owner, or all if not provided.
+ */
+export function useUserProjects(ownerUserId?: string): Project[] {
+  const projects = useSpendStore(s => s.projects);
+  return useMemo(() => {
+    if (!ownerUserId) return projects;
+    return projects.filter(p => p.ownerUserId === ownerUserId);
+  }, [projects, ownerUserId]);
+}
+
+/**
+ * Returns active project. If not found or if list is empty, returns undefined.
+ */
+export function useActiveProject(ownerUserId?: string): Project | undefined {
   const projects = useSpendStore(s => s.projects);
   const activeProjectId = useSpendStore(s => s.settings.activeProjectId);
-  return useMemo(
-    () => projects.find(p => p.id === activeProjectId) ?? projects[0],
-    [projects, activeProjectId]
-  );
+
+  return useMemo(() => {
+    const userScoped = ownerUserId
+      ? projects.filter(p => p.ownerUserId === ownerUserId)
+      : projects;
+
+    if (userScoped.length === 0) return undefined;
+    return userScoped.find(p => p.id === activeProjectId) ?? userScoped[0];
+  }, [projects, activeProjectId, ownerUserId]);
 }
 
-export function useProjectExpenses(projectId: string): ExpenseItem[] {
+export function useProjectExpenses(projectId?: string): ExpenseItem[] {
   const expenses = useSpendStore(s => s.expenses);
-  return useMemo(
-    () => expenses.filter(e => e.projectId === projectId),
-    [expenses, projectId]
-  );
+  return useMemo(() => {
+    if (!projectId) return [];
+    return expenses.filter(e => e.projectId === projectId);
+  }, [expenses, projectId]);
 }
 
-export function useProjectDebugSessions(projectId: string): DebugSession[] {
+export function useProjectDebugSessions(projectId?: string): DebugSession[] {
   const debugSessions = useSpendStore(s => s.debugSessions);
-  return useMemo(
-    () => debugSessions.filter(d => d.projectId === projectId),
-    [debugSessions, projectId]
-  );
+  return useMemo(() => {
+    if (!projectId) return [];
+    return debugSessions.filter(d => d.projectId === projectId);
+  }, [debugSessions, projectId]);
 }
 
-export function useProjectAudit(projectId: string): AiAuditReport | undefined {
+export function useProjectAudit(projectId?: string): AiAuditReport | undefined {
   const auditReports = useSpendStore(s => s.auditReports);
-  return useMemo(
-    () => auditReports.find(r => r.projectId === projectId),
-    [auditReports, projectId]
-  );
+  return useMemo(() => {
+    if (!projectId) return undefined;
+    return auditReports.find(r => r.projectId === projectId);
+  }, [auditReports, projectId]);
 }
 
-export function useMonthlyBurn(projectId: string): number {
+export function useMonthlyBurn(projectId?: string): number {
   const expenses = useProjectExpenses(projectId);
   return useMemo(
     () => expenses.reduce((sum, e) => sum + normalizeToMonthly(e.amount, e.billingCycle), 0),

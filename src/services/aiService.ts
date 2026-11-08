@@ -10,6 +10,7 @@ import { generateId, isoNow, normalizeToMonthly } from '../utils/formatters';
 // ============================================================
 export interface AuditContext {
   projectId: string;
+  ownerUserId?: string;
   projectName: string;
   expenses: ExpenseItem[];
   debugSessions: DebugSession[];
@@ -146,6 +147,7 @@ function runDeterministicAudit(ctx: AuditContext): AiAuditReport {
   return {
     id: `audit_${generateId()}`,
     projectId,
+    ownerUserId: ctx.ownerUserId || 'user_demo',
     generatedAt: isoNow(),
     modelUsed: 'DevSpend Heuristic Engine v1',
     estimatedMonthlySavings: totalSavings,
@@ -351,6 +353,7 @@ function parseAIResponse(raw: string, ctx: AuditContext): AiAuditReport {
     return {
       id: `audit_${generateId()}`,
       projectId: ctx.projectId,
+      ownerUserId: ctx.ownerUserId || 'user_demo',
       generatedAt: isoNow(),
       modelUsed: 'AI Engine',
       estimatedMonthlySavings: parsed.estimatedMonthlySavings ?? 0,

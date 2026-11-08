@@ -14,8 +14,12 @@ import {
   ArrowRight,
   Terminal,
   CornerDownLeft,
+  Home,
+  Trash2,
+  LogOut,
 } from 'lucide-react';
-import { useSpendStore, useActiveProject } from '../../store/useSpendStore';
+import { useSpendStore, useActiveProject, useUserProjects } from '../../store/useSpendStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { exportToJSON, normalizeToMonthly } from '../../utils/formatters';
 
 interface CommandOption {
@@ -34,18 +38,20 @@ export const CommandPalette: React.FC = () => {
     setCommandPaletteOpen,
     setAddExpenseModalOpen,
     setCreateProjectModalOpen,
+    setDeleteProjectModal,
     setActiveView,
     activeDebugTimer,
     startDebugTimer,
     stopAndLogDebugTimer,
-    projects,
     setActiveProject,
     toggleDarkMode,
     settings,
     exportFullState,
   } = useSpendStore();
 
-  const activeProject = useActiveProject();
+  const { currentUser, logout } = useAuthStore();
+  const userProjects = useUserProjects(currentUser?.id);
+  const activeProject = useActiveProject(currentUser?.id);
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -81,11 +87,23 @@ export const CommandPalette: React.FC = () => {
   // Build command list dynamically
   const commands: CommandOption[] = [
     {
+      id: 'go_home',
+      category: 'Navigation',
+      label: 'Projects & Workspaces Hub',
+      description: 'Zero-project onboarding, blueprints, and portfolio grid',
+      icon: <Home size={16} className="text-emerald-400" />,
+      shortcut: 'H',
+      action: () => {
+        setCommandPaletteOpen(false);
+        setActiveView('home');
+      },
+    },
+    {
       id: 'create_project',
       category: 'Actions',
       label: 'Create New Project',
       description: 'Initialize a new project workspace with custom budget & tech stack',
-      icon: <FolderPlus size={16} className="text-violet-400" />,
+      icon: <FolderPlus size={16} className="text-emerald-400" />,
       shortcut: 'P',
       action: () => {
         setCommandPaletteOpen(false);
@@ -124,6 +142,7 @@ export const CommandPalette: React.FC = () => {
         } else {
           startDebugTimer({
             projectId: activeProject?.id ?? '',
+            ownerUserId: currentUser?.id || activeProject?.ownerUserId || 'user_demo',
             description: 'Quick Bug Triage Session',
             component: 'Active Module',
             severity: 'medium',
@@ -206,8 +225,34 @@ export const CommandPalette: React.FC = () => {
         exportToJSON(exportFullState(), `devspend-backup-${Date.now()}.json`);
       },
     },
+    ...(activeProject
+      ? [
+          {
+            id: 'delete_project',
+            category: 'Actions',
+            label: `Delete Project: ${activeProject.name}`,
+            description: 'Permanently purge project, expenses, debug sessions & audits',
+            icon: <Trash2 size={16} className="text-rose-400" />,
+            action: () => {
+              setCommandPaletteOpen(false);
+              setDeleteProjectModal(true, activeProject.id);
+            },
+          },
+        ]
+      : []),
+    {
+      id: 'sign_out',
+      category: 'Account',
+      label: 'Sign Out of DevSpend',
+      description: `End authenticated session for ${currentUser?.displayName || currentUser?.username || 'user'}`,
+      icon: <LogOut size={16} className="text-rose-400" />,
+      action: () => {
+        setCommandPaletteOpen(false);
+        logout();
+      },
+    },
     // Project switchers
-    ...projects.map((p) => ({
+    ...userProjects.map((p) => ({
       id: `proj_${p.id}`,
       category: 'Switch Project',
       label: `Switch to: ${p.name}`,

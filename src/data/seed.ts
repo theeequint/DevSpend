@@ -7,6 +7,7 @@ import { Project, ExpenseItem, DebugSession, AiAuditReport, AppSettings } from '
 export const SEED_PROJECTS: Project[] = [
   {
     id: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     name: 'NexusAI SaaS',
     slug: 'nexusai',
     description: 'Multi-tenant AI workspace with RAG pipeline, Stripe billing, and real-time collaboration.',
@@ -22,6 +23,7 @@ export const SEED_PROJECTS: Project[] = [
   },
   {
     id: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     name: 'HyperNote Mobile',
     slug: 'hypernote',
     description: 'AI-powered markdown note-taking app with offline sync, voice-to-note, and smart summaries.',
@@ -42,6 +44,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_001',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'OpenAI GPT-4o API',
     vendor: 'OpenAI',
     category: 'apis_llms',
@@ -56,6 +59,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_002',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Vercel Pro Plan',
     vendor: 'Vercel',
     category: 'cloud_infra',
@@ -70,6 +74,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_003',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Supabase Pro',
     vendor: 'Supabase',
     category: 'cloud_infra',
@@ -84,6 +89,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_004',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'AWS EC2 t3.medium (NAT Gateway)',
     vendor: 'AWS',
     category: 'cloud_infra',
@@ -98,6 +104,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_005',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Stripe Payment Processing Fees',
     vendor: 'Stripe',
     category: 'apis_llms',
@@ -112,6 +119,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_006',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Upstash Redis (Caching Layer)',
     vendor: 'Upstash',
     category: 'cloud_infra',
@@ -126,6 +134,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_007',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Auth Race Condition Bugfix Sprint',
     vendor: 'Self-Time',
     category: 'debugging_tech_debt',
@@ -141,6 +150,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_008',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'GitHub Copilot Business',
     vendor: 'GitHub',
     category: 'devtools_saas',
@@ -154,6 +164,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_009',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Linear (Project Management)',
     vendor: 'Linear',
     category: 'devtools_saas',
@@ -167,6 +178,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_010',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Sentry Error Monitoring',
     vendor: 'Sentry',
     category: 'devtools_saas',
@@ -181,6 +193,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_011',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Namecheap Domain + SSL',
     vendor: 'Namecheap',
     category: 'domains_legal_misc',
@@ -194,6 +207,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_012',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     title: 'Freelance UI/UX Designer',
     vendor: 'Contra',
     category: 'salaries_contractors',
@@ -211,6 +225,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_013',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     title: 'Anthropic Claude 3 Haiku',
     vendor: 'Anthropic',
     category: 'apis_llms',
@@ -225,6 +240,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_014',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     title: 'Cloudflare Workers + R2',
     vendor: 'Cloudflare',
     category: 'cloud_infra',
@@ -239,6 +255,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_015',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     title: 'PlanetScale Scaler Pro',
     vendor: 'PlanetScale',
     category: 'cloud_infra',
@@ -253,6 +270,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_016',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     title: 'Expo EAS Build & Submit',
     vendor: 'Expo',
     category: 'devtools_saas',
@@ -266,6 +284,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_017',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     title: 'CORS + Offline Sync Debugging',
     vendor: 'Self-Time',
     category: 'debugging_tech_debt',
@@ -281,6 +300,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_018',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     title: 'Apple Developer Program',
     vendor: 'Apple',
     category: 'domains_legal_misc',
@@ -294,6 +314,7 @@ export const SEED_EXPENSES: ExpenseItem[] = [
   {
     id: 'exp_019',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     title: 'Figma Professional',
     vendor: 'Figma',
     category: 'devtools_saas',
@@ -310,6 +331,7 @@ export const SEED_DEBUG_SESSIONS: DebugSession[] = [
   {
     id: 'dbg_001',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     bugDescription: 'JWT refresh token race condition causing silent logouts for 12% of users',
     relatedComponent: 'Auth Middleware / Supabase Session',
     durationMinutes: 540,
@@ -320,6 +342,7 @@ export const SEED_DEBUG_SESSIONS: DebugSession[] = [
   {
     id: 'dbg_002',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     bugDescription: 'Vercel Edge Function cold-start latency spike (800ms p99) under load',
     relatedComponent: 'RAG API Route / Vector Search',
     durationMinutes: 120,
@@ -330,6 +353,7 @@ export const SEED_DEBUG_SESSIONS: DebugSession[] = [
   {
     id: 'dbg_003',
     projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
     bugDescription: 'Stripe webhook signature validation failing in production (env var mismatch)',
     relatedComponent: 'Billing Webhook Handler',
     durationMinutes: 75,
@@ -340,6 +364,7 @@ export const SEED_DEBUG_SESSIONS: DebugSession[] = [
   {
     id: 'dbg_004',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     bugDescription: 'Offline sync conflict: note overwrites when editing on 2 devices simultaneously',
     relatedComponent: 'Sync Engine / CRDT Layer',
     durationMinutes: 330,
@@ -350,6 +375,7 @@ export const SEED_DEBUG_SESSIONS: DebugSession[] = [
   {
     id: 'dbg_005',
     projectId: 'proj_hypernote',
+    ownerUserId: 'user_demo',
     bugDescription: 'Expo EAS build failing on iOS: missing Hermes engine flag in babel.config',
     relatedComponent: 'Build Pipeline / Metro Bundler',
     durationMinutes: 90,
@@ -362,6 +388,7 @@ export const SEED_DEBUG_SESSIONS: DebugSession[] = [
 export const SEED_AI_AUDIT: AiAuditReport = {
   id: 'audit_001',
   projectId: 'proj_nexusai',
+    ownerUserId: 'user_demo',
   generatedAt: '2024-10-28T12:00:00Z',
   modelUsed: 'Deterministic Heuristic Engine',
   estimatedMonthlySavings: 148.90,

@@ -12,6 +12,7 @@ import {
   Check,
   Plus,
   Sparkles,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   useActiveProject,
@@ -47,8 +48,14 @@ const ALL_CATEGORIES: ExpenseCategory[] = [
 export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => {
   const activeProject = useActiveProject();
   const expenses = useProjectExpenses(activeProject?.id ?? '');
-  const { deleteExpense, duplicateExpense, updateExpense, setAddExpenseModalOpen } =
-    useSpendStore();
+  const {
+    deleteExpense,
+    deleteExpenses,
+    clearProjectExpenses,
+    duplicateExpense,
+    updateExpense,
+    setAddExpenseModalOpen,
+  } = useSpendStore();
 
   const currency = activeProject?.currency ?? 'USD';
 
@@ -60,6 +67,10 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+
+  // Multi-row selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
 
   // Toggle category in multi-select
   const toggleCategory = (cat: ExpenseCategory) => {
@@ -127,14 +138,46 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
   }, [expenses, searchQuery, selectedCategories, selectedBillingCycle, sortField, sortDir]);
 
   // Pagination
-  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredExpenses.length / itemsPerPage));
   const paginatedExpenses = filteredExpenses.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
+  // Selection handlers
+  const handleToggleSelectAll = () => {
+    if (selectedIds.size === paginatedExpenses.length && paginatedExpenses.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedExpenses.map((e) => e.id)));
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    deleteExpenses(Array.from(selectedIds));
+    setSelectedIds(new Set());
+  };
+
+  const handleClearAll = () => {
+    if (!activeProject) return;
+    clearProjectExpenses(activeProject.id);
+    setSelectedIds(new Set());
+    setConfirmClearAll(false);
+  };
+
   return (
-    <div className="card space-y-4 p-5">
+    <div className="card space-y-4 p-5 font-sans">
       {/* Controls Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Search */}
@@ -178,56 +221,111 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
 
           <button
             onClick={() => setAddExpenseModalOpen(true)}
-            className="btn-primary text-xs py-1.5 px-3"
+            className="btn-primary text-xs py-1.5 px-3 flex items-center gap-1"
           >
             <Plus size={14} /> Add Item
           </button>
         </div>
       </div>
 
-      {/* Category Filter Pills */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-1">
-        <button
-          onClick={() => setSelectedCategories([])}
-          className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
-            selectedCategories.length === 0
-              ? 'bg-zinc-700/80 text-zinc-100 border-zinc-600'
-              : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
-          }`}
-        >
-          All Categories ({expenses.length})
-        </button>
+      {/* Category Filter Pills & Bulk Action Banner */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-zinc-800/60">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            onClick={() => setSelectedCategories([])}
+            className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+              selectedCategories.length === 0
+                ? 'bg-zinc-700/80 text-zinc-100 border-zinc-600'
+                : 'bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:text-zinc-200'
+            }`}
+          >
+            All Categories ({expenses.length})
+          </button>
 
-        {ALL_CATEGORIES.map((cat) => {
-          const isSelected = selectedCategories.includes(cat);
-          const meta = CATEGORY_META[cat];
-          const count = expenses.filter((e) => e.category === cat).length;
-          return (
+          {ALL_CATEGORIES.map((cat) => {
+            const isSelected = selectedCategories.includes(cat);
+            const count = expenses.filter((e) => e.category === cat).length;
+            if (count === 0 && !isSelected) return null;
+
+            return (
+              <button
+                key={cat}
+                onClick={() => toggleCategory(cat)}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors flex items-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-zinc-800 text-zinc-100 border-zinc-600 shadow-sm'
+                    : 'bg-zinc-900/40 text-zinc-400 border-zinc-800/80 hover:text-zinc-200'
+                }`}
+              >
+                <span>{CATEGORY_META[cat].label}</span>
+                <span className="text-[10px] font-mono opacity-60">({count})</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Bulk Action Controls */}
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
             <button
-              key={cat}
-              onClick={() => toggleCategory(cat)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium border flex items-center gap-1.5 transition-colors ${
-                isSelected
-                  ? 'border-violet-500/60 bg-violet-500/20 text-violet-200'
-                  : 'border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200'
-              }`}
+              onClick={handleBulkDelete}
+              className="px-2.5 py-1 rounded-md bg-rose-600/20 border border-rose-500/40 hover:bg-rose-600/30 text-rose-300 text-xs font-medium flex items-center gap-1.5 transition-colors animate-in fade-in"
             >
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: meta?.color || '#a1a1aa' }}
-              />
-              {meta?.label} ({count})
+              <Trash2 size={13} />
+              <span>Delete Selected ({selectedIds.size})</span>
             </button>
-          );
-        })}
+          )}
+
+          {expenses.length > 0 && (
+            <div>
+              {confirmClearAll ? (
+                <div className="flex items-center gap-1.5 animate-in fade-in">
+                  <span className="text-[11px] text-rose-300 font-mono">Confirm clear all?</span>
+                  <button
+                    onClick={handleClearAll}
+                    className="px-2 py-0.5 rounded bg-rose-600 text-white text-[11px] font-bold hover:bg-rose-500 transition-colors"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={() => setConfirmClearAll(false)}
+                    className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[11px] hover:bg-zinc-700 transition-colors"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmClearAll(true)}
+                  className="px-2.5 py-1 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-zinc-900 border border-transparent hover:border-zinc-800 text-xs transition-colors"
+                  title="Purge all expenses for this project"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Table Data Grid */}
+      {/* Responsive Table Container */}
       <div className="overflow-x-auto rounded-lg border border-zinc-800/80">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-zinc-900/90 border-b border-zinc-800 text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
-              <th className="py-2.5 px-3 w-8">
+            <tr className="border-b border-zinc-800 bg-zinc-900/80 text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
+              {/* Checkbox select all */}
+              <th className="py-2.5 px-3 w-8 text-center">
+                <input
+                  type="checkbox"
+                  checked={
+                    paginatedExpenses.length > 0 &&
+                    selectedIds.size === paginatedExpenses.length
+                  }
+                  onChange={handleToggleSelectAll}
+                  className="rounded border-zinc-700 bg-zinc-900 text-emerald-500 focus:ring-0 cursor-pointer"
+                />
+              </th>
+              <th className="py-2.5 px-2 w-8">
                 <span className="sr-only">Essential</span>
               </th>
               <th
@@ -290,7 +388,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
           <tbody className="divide-y divide-zinc-800/60 bg-[#121215]">
             {paginatedExpenses.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-zinc-500">
+                <td colSpan={9} className="py-12 text-center text-zinc-500">
                   <p className="text-sm">No expenses found matching the current criteria.</p>
                   <button
                     onClick={() => {
@@ -298,7 +396,7 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
                       setSelectedCategories([]);
                       setSelectedBillingCycle('all');
                     }}
-                    className="mt-2 text-xs text-violet-400 hover:underline"
+                    className="mt-2 text-xs text-emerald-400 hover:underline"
                   >
                     Clear all filters
                   </button>
@@ -307,13 +405,27 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
             ) : (
               paginatedExpenses.map((item) => {
                 const monthly = normalizeToMonthly(item.amount, item.billingCycle);
+                const isSelected = selectedIds.has(item.id);
+
                 return (
                   <tr
                     key={item.id}
-                    className="group hover:bg-zinc-800/40 transition-colors"
+                    className={`group transition-colors ${
+                      isSelected ? 'bg-zinc-800/60' : 'hover:bg-zinc-800/40'
+                    }`}
                   >
-                    {/* Star toggle essential */}
+                    {/* Checkbox */}
                     <td className="py-2.5 px-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleRow(item.id)}
+                        className="rounded border-zinc-700 bg-zinc-900 text-emerald-500 focus:ring-0 cursor-pointer"
+                      />
+                    </td>
+
+                    {/* Star toggle essential */}
+                    <td className="py-2.5 px-2 text-center">
                       <button
                         onClick={() =>
                           updateExpense(item.id, { isEssential: !item.isEssential })
@@ -332,21 +444,22 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
                       </button>
                     </td>
 
-                    {/* Title + notes */}
-                    <td className="py-2.5 px-3 max-w-xs">
-                      <div className="font-medium text-zinc-200 truncate flex items-center gap-1.5">
+                    {/* Title & Notes */}
+                    <td className="py-2.5 px-3">
+                      <div className="font-semibold text-zinc-100 flex items-center gap-1.5">
                         <span>{item.title}</span>
                         {item.isAiOptimized && (
                           <span
-                            title="Optimized via AI FinOps recommendation"
-                            className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-violet-500/20 text-violet-300 border border-violet-500/30 flex items-center gap-0.5 shrink-0"
+                            title="AI Cost Optimized"
+                            className="inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
                           >
-                            <Sparkles size={9} /> Opt
+                            <Sparkles size={9} />
+                            Optimized
                           </span>
                         )}
                       </div>
                       {item.notes && (
-                        <div className="text-[11px] text-zinc-500 truncate mt-0.5">
+                        <div className="text-[11px] text-zinc-500 line-clamp-1 mt-0.5">
                           {item.notes}
                         </div>
                       )}
@@ -374,11 +487,11 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
 
                     {/* Monthly normalized cost */}
                     <td className="py-2.5 px-3 text-right">
-                      <div className="num font-bold text-zinc-100">
+                      <div className="num font-bold text-zinc-100 font-mono tabular-nums">
                         {formatCurrency(monthly, currency)}
                       </div>
                       {item.billingCycle !== 'monthly' && (
-                        <div className="num text-[10px] text-zinc-500 font-mono">
+                        <div className="num text-[10px] text-zinc-500 font-mono tabular-nums">
                           base: {formatCurrency(item.amount, currency)}
                         </div>
                       )}
@@ -395,21 +508,21 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
                         <button
                           onClick={() => onEditExpense(item)}
                           title="Edit expense"
-                          className="p-1 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/60 rounded"
+                          className="p-1 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/60 rounded cursor-pointer"
                         >
                           <Edit2 size={13} />
                         </button>
                         <button
                           onClick={() => duplicateExpense(item.id)}
                           title="Duplicate expense"
-                          className="p-1 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/60 rounded"
+                          className="p-1 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/60 rounded cursor-pointer"
                         >
                           <Copy size={13} />
                         </button>
                         <button
                           onClick={() => deleteExpense(item.id)}
                           title="Delete expense"
-                          className="p-1 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded"
+                          className="p-1 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded cursor-pointer"
                         >
                           <Trash2 size={13} />
                         </button>

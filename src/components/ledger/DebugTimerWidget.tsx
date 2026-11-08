@@ -10,12 +10,14 @@ import {
   ChevronDown,
   ChevronUp,
   Flame,
+  Trash2,
 } from 'lucide-react';
 import {
   useActiveProject,
   useProjectDebugSessions,
   useSpendStore,
 } from '../../store/useSpendStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import {
   formatDuration,
   formatCurrency,
@@ -37,8 +39,10 @@ export const DebugTimerWidget: React.FC = () => {
     stopAndLogDebugTimer,
     tickDebugTimer,
     logManualDebugSession,
+    deleteDebugSession,
     addExpense,
   } = useSpendStore();
+  const { currentUser } = useAuthStore();
 
   const hourlyRate = activeProject?.hourlyDevRate ?? 60;
   const currency = activeProject?.currency ?? 'USD';
@@ -81,6 +85,7 @@ export const DebugTimerWidget: React.FC = () => {
 
     startDebugTimer({
       projectId: activeProject?.id ?? '',
+      ownerUserId: currentUser?.id || activeProject?.ownerUserId || 'user_demo',
       description: description.trim(),
       component: component.trim() || 'General Codebase',
       severity,
@@ -95,9 +100,11 @@ export const DebugTimerWidget: React.FC = () => {
 
     const calculatedCost = (manualMinutes / 60) * hourlyRate;
     const nowIso = new Date().toISOString();
+    const ownerUserId = currentUser?.id || activeProject?.ownerUserId || 'user_demo';
 
     logManualDebugSession({
       projectId: activeProject?.id ?? '',
+      ownerUserId,
       bugDescription: description.trim(),
       relatedComponent: component.trim() || 'General Codebase',
       durationMinutes: manualMinutes,
@@ -109,6 +116,7 @@ export const DebugTimerWidget: React.FC = () => {
     // Also auto-append to expenses
     addExpense({
       projectId: activeProject?.id ?? '',
+      ownerUserId,
       title: description.trim(),
       vendor: 'Self-Time',
       category: 'debugging_tech_debt',
@@ -383,13 +391,22 @@ export const DebugTimerWidget: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="text-right shrink-0">
-                    <span className="num font-bold text-amber-400 block">
-                      {formatCurrency(sess.calculatedCost, currency)}
-                    </span>
-                    <span className="num text-[11px] text-zinc-500 font-mono">
-                      {formatMinutes(sess.durationMinutes)}
-                    </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="text-right">
+                      <span className="num font-bold text-amber-400 block font-mono">
+                        {formatCurrency(sess.calculatedCost, currency)}
+                      </span>
+                      <span className="num text-[11px] text-zinc-500 font-mono">
+                        {formatMinutes(sess.durationMinutes)}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => deleteDebugSession(sess.id)}
+                      title="Delete debug session"
+                      className="p-1 rounded text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </div>
               ))}

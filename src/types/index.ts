@@ -38,11 +38,72 @@ export type AuditMode =
   | 'lean_architecture'
   | 'debug_diagnostic';
 
+export type AppView =
+  | 'home'
+  | 'dashboard'
+  | 'ledger'
+  | 'simulator'
+  | 'audit'
+  | 'settings';
+
 // ============================================================
-// Project
+// Authentication & User Model
+// ============================================================
+export type AuthProvider = 'password' | 'google' | 'github' | 'demo';
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  authProvider: AuthProvider;
+  createdAt: string;
+}
+
+export interface StoredUserRecord {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  authProvider: AuthProvider;
+  passwordHash?: string;
+  salt?: string;
+  createdAt: string;
+}
+
+export interface AuthSession {
+  userId: string;
+  username: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  authProvider: AuthProvider;
+  issuedAt: number;
+  expiresAt: number;
+  token: string;
+}
+
+export interface PasswordStrength {
+  isValid: boolean;
+  score: number; // 0 - 5
+  label: 'Very Weak' | 'Weak' | 'Fair' | 'Strong' | 'Very Strong';
+  checks: {
+    length: boolean;     // >= 10 chars
+    uppercase: boolean;  // at least 1 uppercase
+    lowercase: boolean;  // at least 1 lowercase
+    number: boolean;     // at least 1 digit
+    special: boolean;    // at least 1 special char
+  };
+}
+
+// ============================================================
+// Multi-Tenant Project
 // ============================================================
 export interface Project {
   id: string;
+  ownerUserId: string;
   name: string;
   slug: string;
   description: string;
@@ -58,11 +119,12 @@ export interface Project {
 }
 
 // ============================================================
-// Expense Item
+// Multi-Tenant Expense Item
 // ============================================================
 export interface ExpenseItem {
   id: string;
   projectId: string;
+  ownerUserId: string;
   title: string;
   vendor: string;
   category: ExpenseCategory;
@@ -77,11 +139,12 @@ export interface ExpenseItem {
 }
 
 // ============================================================
-// Debug Session
+// Multi-Tenant Debug Session
 // ============================================================
 export interface DebugSession {
   id: string;
   projectId: string;
+  ownerUserId: string;
   bugDescription: string;
   relatedComponent: string;
   durationMinutes: number;
@@ -91,7 +154,7 @@ export interface DebugSession {
 }
 
 // ============================================================
-// AI Audit
+// Multi-Tenant AI Audit
 // ============================================================
 export interface AuditRecommendation {
   id: string;
@@ -112,6 +175,7 @@ export interface AuditRecommendation {
 export interface AiAuditReport {
   id: string;
   projectId: string;
+  ownerUserId: string;
   generatedAt: string;
   modelUsed: string;
   estimatedMonthlySavings: number;
@@ -191,12 +255,16 @@ export interface AppSettings {
 // Command Palette
 // ============================================================
 export type CommandAction =
+  | 'home'
+  | 'new_project'
+  | 'delete_project'
   | 'new_expense'
   | 'toggle_debug_timer'
   | 'switch_project'
   | 'run_ai_audit'
   | 'toggle_theme'
-  | 'export_ledger';
+  | 'export_ledger'
+  | 'sign_out';
 
 export interface CommandItem {
   id: string;

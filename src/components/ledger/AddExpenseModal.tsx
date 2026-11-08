@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Clock, DollarSign, Tag, Calendar, FileText } from 'lucide-react';
 import { useActiveProject, useSpendStore } from '../../store/useSpendStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { ExpenseCategory, BillingCycle, ExpenseItem, ExpensePreset } from '../../types';
 import { normalizeToMonthly, formatCurrency, isoNow } from '../../utils/formatters';
 
@@ -31,6 +32,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 }) => {
   const activeProject = useActiveProject();
   const { addExpense, updateExpense } = useSpendStore();
+  const { currentUser } = useAuthStore();
 
   const hourlyRate = activeProject?.hourlyDevRate ?? 60;
   const currency = activeProject?.currency ?? 'USD';
@@ -116,6 +118,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
     } else {
       addExpense({
         projectId: activeProject?.id ?? '',
+        ownerUserId: currentUser?.id || activeProject?.ownerUserId || 'user_demo',
         title: title.trim(),
         vendor: vendor.trim(),
         category,
