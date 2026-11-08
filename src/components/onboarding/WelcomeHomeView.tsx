@@ -10,6 +10,7 @@ import {
   Rocket,
   Plus,
   Trash2,
+  FolderEdit,
   ArrowRight,
   TrendingUp,
   DollarSign,
@@ -30,6 +31,7 @@ export const WelcomeHomeView: React.FC = () => {
     setActiveView,
     setCreateProjectModalOpen,
     setDeleteProjectModal,
+    setEditProjectModal,
     addProject,
     addExpense,
     expenses,
@@ -255,13 +257,22 @@ export const WelcomeHomeView: React.FC = () => {
 
                   {/* Actions */}
                   <div className="flex items-center justify-between pt-3 border-t border-zinc-800/70">
-                    <button
-                      onClick={() => setDeleteProjectModal(true, p.id)}
-                      className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                      title="Delete Project & Ledger"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setEditProjectModal(true, p.id)}
+                        className="p-1.5 rounded-md text-zinc-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors cursor-pointer"
+                        title="Edit Project Details & Currency"
+                      >
+                        <FolderEdit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteProjectModal(true, p.id)}
+                        className="p-1.5 rounded-md text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                        title="Delete Project & Ledger"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
 
                     <button
                       onClick={() => {

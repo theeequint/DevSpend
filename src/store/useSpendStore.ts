@@ -76,6 +76,8 @@ interface DevSpendState {
   createProjectModalOpen: boolean;
   deleteProjectModalOpen: boolean;
   projectToDeleteId: string | null;
+  editProjectModalOpen: boolean;
+  projectToEditId: string | null;
   simulatorParams: SimulatorParams;
 
   // ── Project actions ─────────────────────────────────────────
@@ -84,6 +86,7 @@ interface DevSpendState {
   deleteProject: (id: string) => void;
   setActiveProject: (id: string) => void;
   setDeleteProjectModal: (open: boolean, projectId?: string | null) => void;
+  setEditProjectModal: (open: boolean, projectId?: string | null) => void;
 
   // ── Expense actions ─────────────────────────────────────────
   addExpense: (expense: Omit<ExpenseItem, 'id'>) => string;
@@ -192,6 +195,8 @@ export const useSpendStore = create<DevSpendState>()(
       createProjectModalOpen: false,
       deleteProjectModalOpen: false,
       projectToDeleteId: null,
+      editProjectModalOpen: false,
+      projectToEditId: null,
       simulatorParams: {
         monthlyActiveUsers: 1000,
         avgTokensPerUser: 5000,
@@ -258,6 +263,13 @@ export const useSpendStore = create<DevSpendState>()(
         set({
           deleteProjectModalOpen: open,
           projectToDeleteId: projectId,
+        });
+      },
+
+      setEditProjectModal: (open, projectId = null) => {
+        set({
+          editProjectModalOpen: open,
+          projectToEditId: projectId,
         });
       },
 

@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   Brain,
+  Cpu,
   Layers,
   Bug,
   ShieldAlert,
@@ -39,6 +40,7 @@ import {
   LeanBlueprintResult,
 } from '../../services/aiService';
 import { AuditMode, AuditRecommendation } from '../../types';
+import ConfigureAiModal from './ConfigureAiModal';
 
 export const AuditView: React.FC = () => {
   const activeProject = useActiveProject();
@@ -54,6 +56,7 @@ export const AuditView: React.FC = () => {
   // Active Sub-tab state
   const [activeTab, setActiveTab] = useState<AuditMode>('full_cost_reduction');
   const [loading, setLoading] = useState(false);
+  const [configureAiOpen, setConfigureAiOpen] = useState(false);
   const [expandedRecs, setExpandedRecs] = useState<Record<string, boolean>>({});
 
   // Blueprint state
@@ -129,14 +132,23 @@ export const AuditView: React.FC = () => {
             <Brain size={20} className="text-violet-400" />
             AI FinOps & Lean Architecture Auditor
           </h1>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Provider Active:{' '}
-            <span className="font-mono text-zinc-200 capitalize">
-              {settings.activeProvider === 'deterministic'
-                ? 'Deterministic Heuristic Engine (Offline)'
-                : settings.activeProvider}
-            </span>
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <p className="text-xs text-zinc-400">
+              Provider Active:{' '}
+              <span className="font-mono text-zinc-200 capitalize">
+                {settings.activeProvider === 'deterministic'
+                  ? 'Deterministic Heuristic Engine (Offline)'
+                  : settings.activeProvider}
+              </span>
+            </p>
+            <button
+              onClick={() => setConfigureAiOpen(true)}
+              className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/30 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Cpu size={11} />
+              <span>Configure AI Engine / Keys</span>
+            </button>
+          </div>
         </div>
 
         {/* Audit Mode Tabs */}
@@ -207,6 +219,13 @@ export const AuditView: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setConfigureAiOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer"
+              >
+                <Cpu size={14} className="text-violet-400" />
+                <span>Configure AI Engine</span>
+              </button>
               {auditReport && (
                 <button
                   onClick={() => deleteAuditReport(auditReport.id)}
@@ -548,6 +567,11 @@ export const AuditView: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Configure AI Engine Modal */}
+      <ConfigureAiModal
+        open={configureAiOpen}
+        onClose={() => setConfigureAiOpen(false)}
+      />
     </div>
   );
 };

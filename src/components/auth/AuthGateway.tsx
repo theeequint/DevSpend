@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { checkPasswordStrength } from '../../utils/security';
+import TopRightThemeSwitcher from '../layout/TopRightThemeSwitcher';
 
 export const AuthGateway: React.FC = () => {
   const {
@@ -86,6 +87,10 @@ export const AuthGateway: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#09090B] text-zinc-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
+      {/* Pinned Top-Right Theme Studio Switcher */}
+      <div className="fixed top-4 right-4 z-50">
+        <TopRightThemeSwitcher />
+      </div>
       {/* Background ambient lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-[400px] h-[250px] bg-blue-500/5 blur-[100px] rounded-full pointer-events-none" />

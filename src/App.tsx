@@ -9,7 +9,7 @@ import LedgerView from './components/ledger/LedgerView';
 import OwnershipView from './components/ownership/OwnershipView';
 import BurnSimulator from './components/simulator/BurnSimulator';
 import AuditView from './components/audit/AuditView';
-import SettingsView from './components/settings/SettingsView';
+import EditProjectModal from './components/project/EditProjectModal';
 import CommandPalette from './components/palette/CommandPalette';
 import AddExpenseModal from './components/ledger/AddExpenseModal';
 import AddRevenueModal from './components/ledger/AddRevenueModal';
@@ -35,6 +35,10 @@ export const AppContent: React.FC = () => {
     setAddFundingRoundModalOpen,
     createProjectModalOpen,
     setCreateProjectModalOpen,
+    editProjectModalOpen,
+    setEditProjectModal,
+    projectToEditId,
+    projects,
   } = useSpendStore();
 
   const { currentUser } = useAuthStore();
@@ -88,7 +92,6 @@ export const AppContent: React.FC = () => {
             {activeView === 'ownership' && <OwnershipView />}
             {activeView === 'simulator' && <BurnSimulator />}
             {activeView === 'audit' && <AuditView />}
-            {activeView === 'settings' && <SettingsView />}
           </>
         )}
       </main>
@@ -116,6 +119,11 @@ export const AppContent: React.FC = () => {
         onClose={() => setCreateProjectModalOpen(false)}
       />
       <DeleteProjectModal />
+      <EditProjectModal
+        open={editProjectModalOpen}
+        onClose={() => setEditProjectModal(false)}
+        project={projects.find((p) => p.id === projectToEditId) || null}
+      />
 
       {/* High-density Minimalist Developer Footer */}
       <footer className="border-t border-zinc-800/60 py-4 px-4 sm:px-6 bg-[#09090B]">

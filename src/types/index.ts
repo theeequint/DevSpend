@@ -44,8 +44,7 @@ export type AppView =
   | 'ledger'
   | 'ownership'
   | 'simulator'
-  | 'audit'
-  | 'settings';
+  | 'audit';
 
 // ============================================================
 // Authentication & User Model (Strict Username + Password Only)
