@@ -17,6 +17,7 @@ import AddStakeholderModal from './components/ownership/AddStakeholderModal';
 import AddFundingRoundModal from './components/ownership/AddFundingRoundModal';
 import CreateProjectModal from './components/project/CreateProjectModal';
 import { DeleteProjectModal } from './components/project/DeleteProjectModal';
+import { applyThemeToDOM, DEFAULT_THEME_ID, ThemeId } from './config/themes';
 
 export const AppContent: React.FC = () => {
   const {
@@ -39,16 +40,23 @@ export const AppContent: React.FC = () => {
   const { currentUser } = useAuthStore();
   const userProjects = useUserProjects(currentUser?.id);
 
-  // Sync dark mode class on <html>
+  // Sync dynamic theme on <html>
   useEffect(() => {
-    if (settings.darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    let savedTheme: string | null = null;
+    try {
+      savedTheme = localStorage.getItem('devspend_active_theme');
+    } catch {
+      //
     }
-  }, [settings.darkMode]);
+    const themeToApply = (settings.activeTheme || savedTheme || DEFAULT_THEME_ID) as ThemeId;
+    applyThemeToDOM(
+      themeToApply,
+      settings.gradientIntensity || 'subtle',
+      settings.cardGlow || 'subtle'
+    );
+  }, [settings.activeTheme, settings.gradientIntensity, settings.cardGlow, settings.darkMode]);
 
-  // Global debug timer tick: keeps running across all views
+// Global debug timer tick: keeps running across all views
   useEffect(() => {
     let interval: any = null;
     if (activeDebugTimer?.running) {

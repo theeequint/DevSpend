@@ -18,12 +18,14 @@ import {
   safeNum,
 } from '../../utils/formatters';
 import { BurnChartPoint } from '../../types';
+import { useActiveTheme } from '../../hooks/useActiveTheme';
 
 export const BurnAreaChart: React.FC = () => {
   const activeProject = useActiveProject();
   const expenses = useProjectExpenses(activeProject?.id ?? '');
   const currency = activeProject?.currency ?? 'USD';
   const budgetCap = activeProject?.monthlyBudgetCap ?? 1000;
+  const { chartColors, activeTheme } = useActiveTheme();
 
   // Calculate current baseline monthly burn by category
   const categoryTotals = useMemo(() => {
@@ -136,24 +138,24 @@ export const BurnAreaChart: React.FC = () => {
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="infraGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={CATEGORY_COLORS.cloud_infra} stopOpacity={0.7} />
-                <stop offset="95%" stopColor={CATEGORY_COLORS.cloud_infra} stopOpacity={0.05} />
+                <stop offset="5%" stopColor={chartColors[0] || CATEGORY_COLORS.cloud_infra} stopOpacity={0.7} />
+                <stop offset="95%" stopColor={chartColors[0] || CATEGORY_COLORS.cloud_infra} stopOpacity={0.05} />
               </linearGradient>
               <linearGradient id="apisGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={CATEGORY_COLORS.apis_llms} stopOpacity={0.7} />
-                <stop offset="95%" stopColor={CATEGORY_COLORS.apis_llms} stopOpacity={0.05} />
+                <stop offset="5%" stopColor={chartColors[1] || CATEGORY_COLORS.apis_llms} stopOpacity={0.7} />
+                <stop offset="95%" stopColor={chartColors[1] || CATEGORY_COLORS.apis_llms} stopOpacity={0.05} />
               </linearGradient>
               <linearGradient id="debugGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={CATEGORY_COLORS.debugging_tech_debt} stopOpacity={0.7} />
-                <stop offset="95%" stopColor={CATEGORY_COLORS.debugging_tech_debt} stopOpacity={0.05} />
+                <stop offset="5%" stopColor={chartColors[3] || CATEGORY_COLORS.debugging_tech_debt} stopOpacity={0.7} />
+                <stop offset="95%" stopColor={chartColors[3] || CATEGORY_COLORS.debugging_tech_debt} stopOpacity={0.05} />
               </linearGradient>
               <linearGradient id="salariesGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={CATEGORY_COLORS.salaries_contractors} stopOpacity={0.7} />
-                <stop offset="95%" stopColor={CATEGORY_COLORS.salaries_contractors} stopOpacity={0.05} />
+                <stop offset="5%" stopColor={chartColors[4] || CATEGORY_COLORS.salaries_contractors} stopOpacity={0.7} />
+                <stop offset="95%" stopColor={chartColors[4] || CATEGORY_COLORS.salaries_contractors} stopOpacity={0.05} />
               </linearGradient>
               <linearGradient id="saasGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={CATEGORY_COLORS.devtools_saas} stopOpacity={0.7} />
-                <stop offset="95%" stopColor={CATEGORY_COLORS.devtools_saas} stopOpacity={0.05} />
+                <stop offset="5%" stopColor={chartColors[2] || CATEGORY_COLORS.devtools_saas} stopOpacity={0.7} />
+                <stop offset="95%" stopColor={chartColors[2] || CATEGORY_COLORS.devtools_saas} stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(63, 63, 70, 0.25)" />
@@ -211,7 +213,7 @@ export const BurnAreaChart: React.FC = () => {
               dataKey="infra"
               name="Infra"
               stackId="1"
-              stroke={CATEGORY_COLORS.cloud_infra}
+              stroke={chartColors[0] || CATEGORY_COLORS.cloud_infra}
               fill="url(#infraGrad)"
             />
             <Area
@@ -219,7 +221,7 @@ export const BurnAreaChart: React.FC = () => {
               dataKey="apis"
               name="APIs"
               stackId="1"
-              stroke={CATEGORY_COLORS.apis_llms}
+              stroke={chartColors[1] || CATEGORY_COLORS.apis_llms}
               fill="url(#apisGrad)"
             />
             <Area
@@ -227,7 +229,7 @@ export const BurnAreaChart: React.FC = () => {
               dataKey="saas"
               name="DevTools"
               stackId="1"
-              stroke={CATEGORY_COLORS.devtools_saas}
+              stroke={chartColors[2] || CATEGORY_COLORS.devtools_saas}
               fill="url(#saasGrad)"
             />
             <Area
@@ -235,7 +237,7 @@ export const BurnAreaChart: React.FC = () => {
               dataKey="debugging"
               name="Debugging"
               stackId="1"
-              stroke={CATEGORY_COLORS.debugging_tech_debt}
+              stroke={chartColors[3] || CATEGORY_COLORS.debugging_tech_debt}
               fill="url(#debugGrad)"
             />
             <Area
@@ -243,7 +245,7 @@ export const BurnAreaChart: React.FC = () => {
               dataKey="salaries"
               name="Salaries"
               stackId="1"
-              stroke={CATEGORY_COLORS.salaries_contractors}
+              stroke={chartColors[4] || CATEGORY_COLORS.salaries_contractors}
               fill="url(#salariesGrad)"
             />
           </AreaChart>

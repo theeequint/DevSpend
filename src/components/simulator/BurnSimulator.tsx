@@ -31,6 +31,7 @@ import {
   safeNum,
 } from '../../utils/formatters';
 import { FreeTierWarning, SimulatorProjection } from '../../types';
+import { useActiveTheme } from '../../hooks/useActiveTheme';
 
 export const BurnSimulator: React.FC = () => {
   const activeProject = useActiveProject();
@@ -39,6 +40,7 @@ export const BurnSimulator: React.FC = () => {
   const currency = activeProject?.currency ?? 'USD';
   const hourlyRate = activeProject?.hourlyDevRate ?? 60;
   const currentBudget = activeProject?.monthlyBudgetCap ?? 1000;
+  const { chartColors, activeTheme } = useActiveTheme();
 
   // Simulator Sliders State
   const [mau, setMau] = useState<number>(5000);
@@ -431,8 +433,8 @@ export const BurnSimulator: React.FC = () => {
               <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="cumulGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.6} />
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.05} />
+                    <stop offset="5%" stopColor={chartColors[0] || "#8b5cf6"} stopOpacity={0.6} />
+                    <stop offset="95%" stopColor={chartColors[0] || "#8b5cf6"} stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(63, 63, 70, 0.25)" />
@@ -478,7 +480,7 @@ export const BurnSimulator: React.FC = () => {
                   type="monotone"
                   dataKey="cumulative"
                   name="Cumulative Spend"
-                  stroke="#8b5cf6"
+                  stroke={chartColors[0] || "#8b5cf6"}
                   strokeWidth={2}
                   fill="url(#cumulGrad)"
                 />

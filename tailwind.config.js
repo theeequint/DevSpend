@@ -12,6 +12,23 @@ export default {
         mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
       },
       colors: {
+        canvas: 'var(--bg-canvas)',
+        surface: {
+          DEFAULT: 'var(--bg-surface-1)',
+          raised: 'var(--bg-surface-2)',
+          glass: 'var(--bg-glass)',
+        },
+        themed: {
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+          border: 'var(--border-subtle)',
+          focus: 'var(--border-focus)',
+        },
+        brand: {
+          primary: 'var(--accent-primary)',
+          secondary: 'var(--accent-secondary)',
+        },
         // Obsidian backgrounds
         obsidian: {
           950: '#09090B',
@@ -20,15 +37,9 @@ export default {
           700: '#18181C',
           600: '#1E1E24',
         },
-        // Surface cards
-        surface: {
-          DEFAULT: '#121215',
-          raised: '#18181C',
-          overlay: '#1E1E24',
-        },
       },
       borderColor: {
-        DEFAULT: 'rgba(63, 63, 70, 0.8)', // zinc-700/80
+        DEFAULT: 'var(--border-subtle)',
       },
       animation: {
         'fade-in': 'fadeIn 0.15s ease-out',

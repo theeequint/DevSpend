@@ -21,7 +21,9 @@ import {
   Home,
   Database,
   PieChart,
+  Palette,
 } from 'lucide-react';
+import { useActiveTheme } from '../../hooks/useActiveTheme';
 import { useSpendStore, useActiveProject, useUserProjects } from '../../store/useSpendStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { Currency, AppView } from '../../types';
@@ -49,6 +51,8 @@ export const Navbar: React.FC = () => {
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+  const { activeTheme, allThemes, setTheme } = useActiveTheme();
 
   const currency = activeProject?.currency ?? 'USD';
   const hourlyRate = activeProject?.hourlyDevRate ?? 60;

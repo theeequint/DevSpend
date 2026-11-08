@@ -23,6 +23,7 @@ import {
 import { useSpendStore, useActiveProject, useUserProjects } from '../../store/useSpendStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { exportToJSON, normalizeToMonthly } from '../../utils/formatters';
+import { THEMES, applyThemeToDOM, ThemeId } from '../../config/themes';
 
 interface CommandOption {
   id: string;
@@ -50,6 +51,7 @@ export const CommandPalette: React.FC = () => {
     setActiveProject,
     toggleDarkMode,
     settings,
+    updateSettings,
     exportFullState,
   } = useSpendStore();
 
@@ -253,6 +255,34 @@ export const CommandPalette: React.FC = () => {
         toggleDarkMode();
       },
     },
+
+    ...THEMES.map((th) => ({
+      id: `theme_${th.id}`,
+      category: 'Appearance / Themes',
+      label: `Switch Theme: ${th.name}`,
+      description: `${th.tagline} (${th.isDark ? 'Dark' : 'Light'})`,
+      icon: (
+        <span
+          className="w-3 h-3 rounded-full inline-block border border-white/20 shadow-sm"
+          style={{ backgroundColor: th.colors.accentPrimary }}
+        />
+      ),
+      action: () => {
+        setCommandPaletteOpen(false);
+        updateSettings({
+          activeTheme: th.id,
+          darkMode: th.isDark,
+        });
+        try {
+          localStorage.setItem('devspend_active_theme', th.id);
+        } catch {}
+        applyThemeToDOM(
+          th.id as ThemeId,
+          settings.gradientIntensity || 'subtle',
+          settings.cardGlow || 'subtle'
+        );
+      },
+    })),
     {
       id: 'export_ledger',
       category: 'Data',

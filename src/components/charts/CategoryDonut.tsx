@@ -16,12 +16,14 @@ import {
   safeNum,
 } from '../../utils/formatters';
 import { ExpenseCategory } from '../../types';
+import { useActiveTheme } from '../../hooks/useActiveTheme';
 import ProgressBar from '../ui/ProgressBar';
 
 export const CategoryDonut: React.FC = () => {
   const activeProject = useActiveProject();
   const expenses = useProjectExpenses(activeProject?.id ?? '');
   const currency = activeProject?.currency ?? 'USD';
+  const { chartColors, activeTheme } = useActiveTheme();
 
   const { data, totalMonthly } = useMemo(() => {
     const map: Record<string, number> = {
@@ -42,7 +44,7 @@ export const CategoryDonut: React.FC = () => {
 
     const chartItems = Object.entries(map)
       .filter(([_, amount]) => amount > 0)
-      .map(([cat, amount]) => {
+      .map(([cat, amount], idx) => {
         const category = cat as ExpenseCategory;
         const meta = CATEGORY_META[category];
         return {
@@ -50,7 +52,7 @@ export const CategoryDonut: React.FC = () => {
           category,
           amount,
           percent: safeDiv(amount * 100, total, 0),
-          color: CATEGORY_COLORS[category] || '#71717a',
+          color: chartColors[idx % chartColors.length] || CATEGORY_COLORS[category] || '#71717a',
         };
       })
       .sort((a, b) => b.amount - a.amount);
@@ -93,7 +95,7 @@ export const CategoryDonut: React.FC = () => {
                   dataKey="amount"
                 >
                   {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} stroke="#121215" strokeWidth={2} />
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke={activeTheme.colors.surface1} strokeWidth={2} />
                   ))}
                 </Pie>
                 <Tooltip

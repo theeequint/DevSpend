@@ -54,6 +54,7 @@ import { Stakeholder, FundingRound, EquityInstrument } from '../../types';
 import DilutionSimulatorWidget from './DilutionSimulatorWidget';
 import AddStakeholderModal from './AddStakeholderModal';
 import AddFundingRoundModal from './AddFundingRoundModal';
+import { useActiveTheme } from '../../hooks/useActiveTheme';
 
 const PIE_COLORS = [
   '#10B981', // emerald (founders)
@@ -87,6 +88,7 @@ export const OwnershipView: React.FC = () => {
   const [roundToDelete, setRoundToDelete] = useState<FundingRound | null>(null);
 
   const currency = activeProject?.currency ?? 'USD';
+  const { chartColors, activeTheme } = useActiveTheme();
 
   // ── Prepare Equity Donut Data ──
   const equityDistributionData = useMemo(() => {
@@ -97,25 +99,25 @@ export const OwnershipView: React.FC = () => {
         name: 'Founders',
         value: capSummary.founderShares,
         percent: capSummary.founderPercent,
-        color: '#10B981', // emerald
+        color: chartColors[0] || '#10B981',
       },
       {
         name: 'Investors (VC & Angels)',
         value: capSummary.investorShares,
         percent: capSummary.investorPercent,
-        color: '#3B82F6', // blue
+        color: chartColors[1] || '#3B82F6',
       },
       {
         name: 'ESOP / Option Pool',
         value: capSummary.esopShares,
         percent: capSummary.esopPercent,
-        color: '#8B5CF6', // purple
+        color: chartColors[2] || '#8B5CF6',
       },
       {
         name: 'Advisors & Strategic',
         value: capSummary.advisorShares,
         percent: capSummary.advisorPercent,
-        color: '#F59E0B', // amber
+        color: chartColors[3] || '#F59E0B',
       },
     ].filter((d) => d.value > 0);
 
@@ -132,17 +134,17 @@ export const OwnershipView: React.FC = () => {
       {
         metric: 'Total Raised',
         amount: totalRaised,
-        fill: '#10B981',
+        fill: chartColors[0] || '#10B981',
       },
       {
         metric: 'In Treasury (Bank)',
         amount: cashReserve,
-        fill: '#3B82F6',
+        fill: chartColors[1] || '#3B82F6',
       },
       {
         metric: 'Capital Deployed',
         amount: capitalDeployed,
-        fill: '#6B7280',
+        fill: chartColors[2] || '#6B7280',
       },
     ];
   }, [capSummary.totalCapitalRaised, activeProject?.totalCashReserve]);
@@ -357,7 +359,7 @@ export const OwnershipView: React.FC = () => {
                       dataKey="value"
                     >
                       {equityDistributionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke={activeTheme.colors.surface1} strokeWidth={2} />
                       ))}
                     </Pie>
                     <RechartsTooltip

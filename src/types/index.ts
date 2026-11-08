@@ -395,6 +395,9 @@ export interface AppSettings {
   openrouterApiKey: string;
   darkMode: boolean;
   activeProjectId: string;
+  activeTheme?: string;
+  gradientIntensity?: 'subtle' | 'vibrant' | 'off';
+  cardGlow?: 'subtle' | 'vibrant' | 'none';
 }
 
 // ============================================================

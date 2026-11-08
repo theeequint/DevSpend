@@ -27,6 +27,7 @@ import { testApiConnection } from '../../services/aiService';
 import { getGitHubToken, setGitHubToken, getShardManifest } from '../../services/userShardService';
 import { useAuthStore } from '../../store/useAuthStore';
 import { AiProvider, Currency, ProjectStatus } from '../../types';
+import ThemeSelectorStudio from './ThemeSelectorStudio';
 
 export const SettingsView: React.FC = () => {
   const activeProject = useActiveProject();
@@ -165,9 +166,14 @@ export const SettingsView: React.FC = () => {
           Settings & Data Portability Vault
         </h1>
         <p className="text-xs text-zinc-400 mt-0.5">
-          Configure API credentials, calibrate project unit economics, and manage JSON/CSV backups.
+          Configure visual themes, calibrate project unit economics, and manage GitHub-backed JSON/CSV backups.
         </p>
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          SECTION 0: DYNAMIC APPEARANCE & THEME STUDIO (15 THEMES)
+      ───────────────────────────────────────────────────────────── */}
+      <ThemeSelectorStudio />
 
       {/* ─────────────────────────────────────────────────────────────
           SECTION 1: AI PROVIDER CONFIGURATION

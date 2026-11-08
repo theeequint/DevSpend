@@ -4,18 +4,407 @@
 
 @layer base {
   :root {
-    --color-bg: #09090B;
-    --color-surface: #121215;
-    --color-surface-raised: #18181C;
-    --color-border: rgba(63, 63, 70, 0.8);
-    --color-text: #f4f4f5;
-    --color-muted: #71717a;
+    /* 15-Theme Chameleon Engine Tokens (Default: Obsidian Linear) */
+    --bg-canvas: #09090B;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent 70%);
+    --bg-surface-1: #121215;
+    --bg-surface-2: #18181C;
+    --bg-glass: rgba(18, 18, 21, 0.75);
+    --border-subtle: rgba(63, 63, 70, 0.5);
+    --border-focus: #6366F1;
+    --text-primary: #F4F4F5;
+    --text-secondary: #A1A1AA;
+    --text-muted: #71717A;
+    --accent-primary: #6366F1;
+    --accent-secondary: #8B5CF6;
+    --accent-gradient: linear-gradient(135deg, #6366F1, #8B5CF6);
+    --accent-glow: rgba(99, 102, 241, 0.35);
+    --status-success: #10B981;
+    --status-warning: #F59E0B;
+    --status-danger: #F43F5E;
+    --chart-1: #6366F1;
+    --chart-2: #8B5CF6;
+    --chart-3: #10B981;
+    --chart-4: #38BDF8;
+    --chart-5: #F59E0B;
+
+    /* Legacy compatibility tokens */
+    --color-bg: var(--bg-canvas);
+    --color-surface: var(--bg-surface-1);
+    --color-surface-raised: var(--bg-surface-2);
+    --color-border: var(--border-subtle);
+    --color-text: var(--text-primary);
+    --color-muted: var(--text-secondary);
+  }
+
+  /* ── 2. Midnight Cyberpunk ──────────────────────────────────── */
+  [data-theme="midnight-cyberpunk"] {
+    --bg-canvas: #070710;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(236, 72, 153, 0.2), rgba(6, 182, 212, 0.12) 60%, transparent 80%);
+    --bg-surface-1: #0D0E1A;
+    --bg-surface-2: #151728;
+    --bg-glass: rgba(13, 14, 26, 0.8);
+    --border-subtle: rgba(6, 182, 212, 0.28);
+    --border-focus: #06B6D4;
+    --text-primary: #E0F2FE;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --accent-primary: #EC4899;
+    --accent-secondary: #06B6D4;
+    --accent-gradient: linear-gradient(135deg, #EC4899, #06B6D4);
+    --accent-glow: rgba(236, 72, 153, 0.45);
+    --status-success: #00F5D4;
+    --status-warning: #FEE440;
+    --status-danger: #FF0054;
+    --chart-1: #EC4899;
+    --chart-2: #06B6D4;
+    --chart-3: #00F5D4;
+    --chart-4: #A855F7;
+    --chart-5: #FEE440;
+  }
+
+  /* ── 3. Emerald Matrix ──────────────────────────────────────── */
+  [data-theme="emerald-matrix"] {
+    --bg-canvas: #040D08;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.22), transparent 70%);
+    --bg-surface-1: #08170F;
+    --bg-surface-2: #0E2419;
+    --bg-glass: rgba(8, 23, 15, 0.8);
+    --border-subtle: rgba(16, 185, 129, 0.28);
+    --border-focus: #10B981;
+    --text-primary: #ECFDF5;
+    --text-secondary: #6EE7B7;
+    --text-muted: #34D399;
+    --accent-primary: #10B981;
+    --accent-secondary: #84CC16;
+    --accent-gradient: linear-gradient(135deg, #10B981, #84CC16);
+    --accent-glow: rgba(16, 185, 129, 0.4);
+    --status-success: #10B981;
+    --status-warning: #EAB308;
+    --status-danger: #EF4444;
+    --chart-1: #10B981;
+    --chart-2: #84CC16;
+    --chart-3: #06B6D4;
+    --chart-4: #14B8A6;
+    --chart-5: #A3E635;
+  }
+
+  /* ── 4. Tokyo Night Storm ───────────────────────────────────── */
+  [data-theme="tokyo-night"] {
+    --bg-canvas: #1A1B26;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(122, 162, 247, 0.18), transparent 70%);
+    --bg-surface-1: #24283B;
+    --bg-surface-2: #2F354F;
+    --bg-glass: rgba(36, 40, 59, 0.8);
+    --border-subtle: rgba(122, 162, 247, 0.22);
+    --border-focus: #7AA2F7;
+    --text-primary: #C0CAF5;
+    --text-secondary: #9AA5CE;
+    --text-muted: #565F89;
+    --accent-primary: #7AA2F7;
+    --accent-secondary: #BB9AF7;
+    --accent-gradient: linear-gradient(135deg, #7AA2F7, #BB9AF7);
+    --accent-glow: rgba(122, 162, 247, 0.35);
+    --status-success: #9ECE6A;
+    --status-warning: #E0AF68;
+    --status-danger: #F7768E;
+    --chart-1: #7AA2F7;
+    --chart-2: #BB9AF7;
+    --chart-3: #7DCFFF;
+    --chart-4: #9ECE6A;
+    --chart-5: #E0AF68;
+  }
+
+  /* ── 5. Dracula Vampire ─────────────────────────────────────── */
+  [data-theme="dracula-pro"] {
+    --bg-canvas: #282A36;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(189, 147, 249, 0.22), transparent 70%);
+    --bg-surface-1: #1E1F29;
+    --bg-surface-2: #343746;
+    --bg-glass: rgba(30, 31, 41, 0.8);
+    --border-subtle: rgba(98, 114, 164, 0.35);
+    --border-focus: #BD93F9;
+    --text-primary: #F8F8F2;
+    --text-secondary: #BFBFB2;
+    --text-muted: #6272A4;
+    --accent-primary: #FF79C6;
+    --accent-secondary: #BD93F9;
+    --accent-gradient: linear-gradient(135deg, #FF79C6, #BD93F9);
+    --accent-glow: rgba(255, 121, 198, 0.38);
+    --status-success: #50FA7B;
+    --status-warning: #F1FA8C;
+    --status-danger: #FF5555;
+    --chart-1: #BD93F9;
+    --chart-2: #FF79C6;
+    --chart-3: #8BE9FD;
+    --chart-4: #50FA7B;
+    --chart-5: #F1FA8C;
+  }
+
+  /* ── 6. Catppuccin Mocha ────────────────────────────────────── */
+  [data-theme="catppuccin-mocha"] {
+    --bg-canvas: #1E1E2E;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(203, 166, 247, 0.18), transparent 70%);
+    --bg-surface-1: #181825;
+    --bg-surface-2: #313244;
+    --bg-glass: rgba(24, 24, 37, 0.8);
+    --border-subtle: rgba(88, 91, 112, 0.4);
+    --border-focus: #CBA6F7;
+    --text-primary: #CDD6F4;
+    --text-secondary: #BAC2DE;
+    --text-muted: #7F849C;
+    --accent-primary: #CBA6F7;
+    --accent-secondary: #FAB387;
+    --accent-gradient: linear-gradient(135deg, #CBA6F7, #FAB387);
+    --accent-glow: rgba(203, 166, 247, 0.35);
+    --status-success: #A6E3A1;
+    --status-warning: #F9E2AF;
+    --status-danger: #F38BA8;
+    --chart-1: #CBA6F7;
+    --chart-2: #FAB387;
+    --chart-3: #89B4FA;
+    --chart-4: #A6E3A1;
+    --chart-5: #F9E2AF;
+  }
+
+  /* ── 7. Nord Polar Frost ────────────────────────────────────── */
+  [data-theme="nord-arctic"] {
+    --bg-canvas: #2E3440;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(136, 192, 208, 0.2), transparent 70%);
+    --bg-surface-1: #3B4252;
+    --bg-surface-2: #434C5E;
+    --bg-glass: rgba(59, 66, 82, 0.8);
+    --border-subtle: rgba(76, 86, 106, 0.5);
+    --border-focus: #88C0D0;
+    --text-primary: #ECEFF4;
+    --text-secondary: #E5E9F0;
+    --text-muted: #D8DEE9;
+    --accent-primary: #88C0D0;
+    --accent-secondary: #5E81AC;
+    --accent-gradient: linear-gradient(135deg, #88C0D0, #5E81AC);
+    --accent-glow: rgba(136, 192, 208, 0.35);
+    --status-success: #A3BE8C;
+    --status-warning: #EBCB8B;
+    --status-danger: #BF616A;
+    --chart-1: #88C0D0;
+    --chart-2: #81A1C1;
+    --chart-3: #5E81AC;
+    --chart-4: #A3BE8C;
+    --chart-5: #EBCB8B;
+  }
+
+  /* ── 8. Crimson Velvet / Sith ───────────────────────────────── */
+  [data-theme="crimson-velvet"] {
+    --bg-canvas: #0F0507;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(244, 63, 94, 0.25), transparent 70%);
+    --bg-surface-1: #1A0A0E;
+    --bg-surface-2: #261016;
+    --bg-glass: rgba(26, 10, 14, 0.85);
+    --border-subtle: rgba(244, 63, 94, 0.28);
+    --border-focus: #F43F5E;
+    --text-primary: #FFE4E6;
+    --text-secondary: #FDA4AF;
+    --text-muted: #9F1239;
+    --accent-primary: #F43F5E;
+    --accent-secondary: #F97316;
+    --accent-gradient: linear-gradient(135deg, #F43F5E, #F97316);
+    --accent-glow: rgba(244, 63, 94, 0.45);
+    --status-success: #10B981;
+    --status-warning: #FB923C;
+    --status-danger: #E11D48;
+    --chart-1: #F43F5E;
+    --chart-2: #F97316;
+    --chart-3: #FB7185;
+    --chart-4: #E11D48;
+    --chart-5: #FDA4AF;
+  }
+
+  /* ── 9. Wall Street Sovereign Gold ──────────────────────────── */
+  [data-theme="solarized-gold"] {
+    --bg-canvas: #0C0B08;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(234, 179, 8, 0.22), transparent 70%);
+    --bg-surface-1: #171510;
+    --bg-surface-2: #242118;
+    --bg-glass: rgba(23, 21, 16, 0.8);
+    --border-subtle: rgba(234, 179, 8, 0.28);
+    --border-focus: #EAB308;
+    --text-primary: #FEF9C3;
+    --text-secondary: #FDE047;
+    --text-muted: #A16207;
+    --accent-primary: #EAB308;
+    --accent-secondary: #F59E0B;
+    --accent-gradient: linear-gradient(135deg, #EAB308, #F59E0B);
+    --accent-glow: rgba(234, 179, 8, 0.4);
+    --status-success: #22C55E;
+    --status-warning: #FBBF24;
+    --status-danger: #EF4444;
+    --chart-1: #EAB308;
+    --chart-2: #F59E0B;
+    --chart-3: #FACC15;
+    --chart-4: #CA8A04;
+    --chart-5: #FEF08A;
+  }
+
+  /* ── 10. Synthwave Sunset ───────────────────────────────────── */
+  [data-theme="synthwave-84"] {
+    --bg-canvas: #191124;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 110, 127, 0.25), rgba(168, 85, 247, 0.16) 60%, transparent 80%);
+    --bg-surface-1: #231733;
+    --bg-surface-2: #312147;
+    --bg-glass: rgba(35, 23, 51, 0.8);
+    --border-subtle: rgba(255, 110, 127, 0.28);
+    --border-focus: #FF6E7F;
+    --text-primary: #FCE7F3;
+    --text-secondary: #F472B6;
+    --text-muted: #9D4EDD;
+    --accent-primary: #FF6E7F;
+    --accent-secondary: #A855F7;
+    --accent-gradient: linear-gradient(135deg, #FF6E7F, #A855F7);
+    --accent-glow: rgba(255, 110, 127, 0.45);
+    --status-success: #00F5D4;
+    --status-warning: #FFE600;
+    --status-danger: #FF007F;
+    --chart-1: #FF6E7F;
+    --chart-2: #A855F7;
+    --chart-3: #00F5D4;
+    --chart-4: #F472B6;
+    --chart-5: #FFE600;
+  }
+
+  /* ── 11. Cobalt Ocean Abyss ─────────────────────────────────── */
+  [data-theme="cobalt-ocean"] {
+    --bg-canvas: #06101E;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(14, 165, 233, 0.22), transparent 70%);
+    --bg-surface-1: #0D1B2E;
+    --bg-surface-2: #152A47;
+    --bg-glass: rgba(13, 27, 46, 0.8);
+    --border-subtle: rgba(14, 165, 233, 0.26);
+    --border-focus: #0EA5E9;
+    --text-primary: #E0F2FE;
+    --text-secondary: #7DD3FC;
+    --text-muted: #0369A1;
+    --accent-primary: #0EA5E9;
+    --accent-secondary: #14B8A6;
+    --accent-gradient: linear-gradient(135deg, #0EA5E9, #14B8A6);
+    --accent-glow: rgba(14, 165, 233, 0.38);
+    --status-success: #10B981;
+    --status-warning: #F59E0B;
+    --status-danger: #EF4444;
+    --chart-1: #0EA5E9;
+    --chart-2: #14B8A6;
+    --chart-3: #38BDF8;
+    --chart-4: #2DD4BF;
+    --chart-5: #0284C7;
+  }
+
+  /* ── 12. Monokai Pro Spectrum ───────────────────────────────── */
+  [data-theme="monokai-spectrum"] {
+    --bg-canvas: #221F22;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 216, 102, 0.2), transparent 70%);
+    --bg-surface-1: #2D2A2E;
+    --bg-surface-2: #3E3B40;
+    --bg-glass: rgba(45, 42, 46, 0.8);
+    --border-subtle: rgba(147, 146, 147, 0.32);
+    --border-focus: #FFD866;
+    --text-primary: #FCFCFA;
+    --text-secondary: #C1C0C0;
+    --text-muted: #727072;
+    --accent-primary: #FFD866;
+    --accent-secondary: #FF6188;
+    --accent-gradient: linear-gradient(135deg, #FFD866, #FF6188);
+    --accent-glow: rgba(255, 216, 102, 0.38);
+    --status-success: #A9DC76;
+    --status-warning: #FC9867;
+    --status-danger: #FF6188;
+    --chart-1: #FF6188;
+    --chart-2: #FFD866;
+    --chart-3: #78DCE8;
+    --chart-4: #A9DC76;
+    --chart-5: #AB9DF2;
+  }
+
+  /* ── 13. Vercel Daylight (Light) ────────────────────────────── */
+  [data-theme="vercel-daylight"] {
+    --bg-canvas: #FAFAFA;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 0, 0, 0.05), transparent 70%);
+    --bg-surface-1: #FFFFFF;
+    --bg-surface-2: #F4F4F5;
+    --bg-glass: rgba(255, 255, 255, 0.85);
+    --border-subtle: #E4E4E7;
+    --border-focus: #18181B;
+    --text-primary: #09090B;
+    --text-secondary: #52525B;
+    --text-muted: #71717A;
+    --accent-primary: #18181B;
+    --accent-secondary: #3F3F46;
+    --accent-gradient: linear-gradient(135deg, #18181B, #3F3F46);
+    --accent-glow: rgba(0, 0, 0, 0.15);
+    --status-success: #059669;
+    --status-warning: #D97706;
+    --status-danger: #DC2626;
+    --chart-1: #18181B;
+    --chart-2: #3B82F6;
+    --chart-3: #10B981;
+    --chart-4: #8B5CF6;
+    --chart-5: #F59E0B;
+  }
+
+  /* ── 14. Solarized Paper (Light) ────────────────────────────── */
+  [data-theme="solarized-paper"] {
+    --bg-canvas: #FDF6E3;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(181, 137, 0, 0.12), transparent 70%);
+    --bg-surface-1: #EEE8D5;
+    --bg-surface-2: #E0D8C3;
+    --bg-glass: rgba(238, 232, 213, 0.85);
+    --border-subtle: rgba(101, 123, 131, 0.28);
+    --border-focus: #B58900;
+    --text-primary: #073642;
+    --text-secondary: #586E75;
+    --text-muted: #839496;
+    --accent-primary: #B58900;
+    --accent-secondary: #CB4B16;
+    --accent-gradient: linear-gradient(135deg, #B58900, #CB4B16);
+    --accent-glow: rgba(181, 137, 0, 0.28);
+    --status-success: #859900;
+    --status-warning: #B58900;
+    --status-danger: #DC322F;
+    --chart-1: #B58900;
+    --chart-2: #CB4B16;
+    --chart-3: #268BD2;
+    --chart-4: #859900;
+    --chart-5: #6C71C4;
+  }
+
+  /* ── 15. Arctic Frost Light ─────────────────────────────────── */
+  [data-theme="arctic-frost-light"] {
+    --bg-canvas: #F0F4F8;
+    --bg-hero-gradient: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(37, 99, 235, 0.1), transparent 70%);
+    --bg-surface-1: #FFFFFF;
+    --bg-surface-2: #E2E8F0;
+    --bg-glass: rgba(255, 255, 255, 0.85);
+    --border-subtle: #CBD5E1;
+    --border-focus: #2563EB;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --accent-primary: #2563EB;
+    --accent-secondary: #4F46E5;
+    --accent-gradient: linear-gradient(135deg, #2563EB, #4F46E5);
+    --accent-glow: rgba(37, 99, 235, 0.25);
+    --status-success: #059669;
+    --status-warning: #D97706;
+    --status-danger: #DC2626;
+    --chart-1: #2563EB;
+    --chart-2: #4F46E5;
+    --chart-3: #0EA5E9;
+    --chart-4: #10B981;
+    --chart-5: #F59E0B;
   }
 
   * {
     box-sizing: border-box;
     scrollbar-width: thin;
-    scrollbar-color: rgba(63, 63, 70, 0.6) transparent;
+    scrollbar-color: var(--border-subtle) transparent;
   }
 
   *::-webkit-scrollbar {
@@ -28,7 +417,7 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background: rgba(63, 63, 70, 0.6);
+    background: var(--border-subtle);
     border-radius: 3px;
   }
 
@@ -37,8 +426,13 @@
   }
 
   body {
-    @apply bg-[#09090B] text-zinc-100;
+    background-color: var(--bg-canvas);
+    background-image: var(--bg-hero-gradient);
+    background-attachment: fixed;
+    color: var(--text-primary);
     font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
@@ -50,13 +444,18 @@
     font-feature-settings: 'tnum';
   }
 
-  /* Glass card */
+  /* Chameleon Cards */
   .card {
-    @apply bg-[#121215] border border-zinc-800/80 rounded-xl;
+    background-color: var(--bg-surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .card-raised {
-    @apply bg-[#18181C] border border-zinc-700/60 rounded-xl;
+    background-color: var(--bg-surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
   }
 
   /* Status badge */
@@ -64,15 +463,24 @@
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border;
   }
 
-  /* Subtle button */
+  /* Buttons */
   .btn-ghost {
-    @apply px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 
-           rounded-lg transition-colors duration-150 font-medium;
+    @apply px-3 py-1.5 text-sm rounded-lg transition-colors duration-150 font-medium;
+    color: var(--text-secondary);
+  }
+  .btn-ghost:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-surface-2);
   }
 
   .btn-primary {
-    @apply px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium 
-           rounded-lg transition-colors duration-150 flex items-center gap-2;
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-all duration-150 flex items-center gap-2;
+    color: #ffffff;
+    background: var(--accent-gradient);
+    box-shadow: 0 4px 14px var(--accent-glow);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.08);
   }
 
   .btn-danger {
@@ -80,20 +488,39 @@
            rounded-lg transition-colors duration-150 font-medium;
   }
 
-  /* Input */
+  /* Form Elements */
   .input {
-    @apply w-full bg-zinc-900 border border-zinc-700/80 rounded-lg px-3 py-2 
-           text-sm text-zinc-100 placeholder:text-zinc-500 
-           focus:outline-none focus:ring-1 focus:ring-violet-500/60 focus:border-violet-500/40
-           transition-colors duration-150;
+    width: 100%;
+    background-color: var(--bg-surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 1px var(--border-focus);
+  }
+  .input::placeholder {
+    color: var(--text-muted);
   }
 
-  /* Select */
   .select {
-    @apply w-full bg-zinc-900 border border-zinc-700/80 rounded-lg px-3 py-2 
-           text-sm text-zinc-100 
-           focus:outline-none focus:ring-1 focus:ring-violet-500/60 focus:border-violet-500/40
-           transition-colors duration-150;
+    width: 100%;
+    background-color: var(--bg-surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+  }
+  .select:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 1px var(--border-focus);
   }
 
   /* Tab */
@@ -102,11 +529,16 @@
   }
 
   .tab-active {
-    @apply bg-zinc-800 text-zinc-100;
+    background-color: var(--bg-surface-2);
+    color: var(--text-primary);
   }
 
   .tab-inactive {
-    @apply text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/40;
+    color: var(--text-muted);
+  }
+  .tab-inactive:hover {
+    color: var(--text-secondary);
+    background-color: var(--bg-glass);
   }
 
   /* Live timer pulse */
@@ -114,14 +546,13 @@
     @apply animate-pulse-soft text-rose-400;
   }
 
-  /* Runway meter */
-  .runway-bar {
-    @apply h-1 rounded-full bg-zinc-800 overflow-hidden;
-  }
-
   /* KPI card hover */
   .kpi-card {
-    @apply card p-4 hover:border-zinc-700/80 transition-colors duration-200;
+    @apply card p-4 transition-all duration-200;
+  }
+  .kpi-card:hover {
+    border-color: var(--border-focus);
+    box-shadow: 0 4px 20px var(--accent-glow);
   }
 }
 
@@ -131,23 +562,124 @@
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 
   .gradient-border {
-    background: linear-gradient(#121215, #121215) padding-box,
-                linear-gradient(135deg, rgba(139, 92, 246, 0.4), rgba(6, 182, 212, 0.4)) border-box;
+    background: linear-gradient(var(--bg-surface-1), var(--bg-surface-1)) padding-box,
+                var(--accent-gradient) border-box;
     border: 1px solid transparent;
   }
 }
 
-/* Recharts customization */
+/* ── Dynamic Universal Theme Mappings ───────────────────────── */
+[data-theme] .bg-\[\#09090B\],
+[data-theme] .bg-\[\#09090B\]\/95,
+[data-theme] .bg-obsidian-950 {
+  background-color: var(--bg-canvas) !important;
+}
+
+[data-theme] .bg-\[\#121215\],
+[data-theme] .bg-\[\#121215\]\/95,
+[data-theme] .bg-\[\#121215\]\/80,
+[data-theme] .bg-\[\#121215\]\/70,
+[data-theme] .bg-surface {
+  background-color: var(--bg-surface-1) !important;
+}
+
+[data-theme] .bg-\[\#18181C\],
+[data-theme] .bg-surface-raised {
+  background-color: var(--bg-surface-2) !important;
+}
+
+/* Light Theme High-Contrast Overrides */
+[data-theme="vercel-daylight"],
+[data-theme="solarized-paper"],
+[data-theme="arctic-frost-light"],
+.light,
+html.light,
+body.light {
+  color-scheme: light;
+}
+
+:is([data-theme="vercel-daylight"], [data-theme="solarized-paper"], [data-theme="arctic-frost-light"], .light) :is(
+  .bg-zinc-950,
+  .bg-zinc-950\/70,
+  .bg-zinc-950\/60,
+  .bg-zinc-900,
+  .bg-zinc-900\/90,
+  .bg-zinc-900\/80,
+  .bg-zinc-900\/70,
+  .bg-zinc-900\/60,
+  .bg-zinc-900\/40,
+  .bg-zinc-900\/30
+) {
+  background-color: var(--bg-surface-1) !important;
+}
+
+:is([data-theme="vercel-daylight"], [data-theme="solarized-paper"], [data-theme="arctic-frost-light"], .light) :is(
+  .bg-zinc-800,
+  .bg-zinc-800\/80,
+  .bg-zinc-800\/60,
+  .bg-zinc-800\/40
+) {
+  background-color: var(--bg-surface-2) !important;
+}
+
+:is([data-theme="vercel-daylight"], [data-theme="solarized-paper"], [data-theme="arctic-frost-light"], .light) :is(
+  .border-zinc-800,
+  .border-zinc-800\/80,
+  .border-zinc-800\/60,
+  .border-zinc-800\/50,
+  .border-zinc-700,
+  .border-zinc-700\/80,
+  .border-zinc-700\/60,
+  .border-zinc-700\/50
+) {
+  border-color: var(--border-subtle) !important;
+}
+
+:is([data-theme="vercel-daylight"], [data-theme="solarized-paper"], [data-theme="arctic-frost-light"], .light) :is(
+  .text-zinc-100,
+  .text-zinc-200,
+  .text-zinc-300,
+  .text-white
+) {
+  color: var(--text-primary) !important;
+}
+
+:is([data-theme="vercel-daylight"], [data-theme="solarized-paper"], [data-theme="arctic-frost-light"], .light) .text-zinc-400 {
+  color: var(--text-secondary) !important;
+}
+
+:is([data-theme="vercel-daylight"], [data-theme="solarized-paper"], [data-theme="arctic-frost-light"], .light) :is(
+  .text-zinc-500,
+  .text-zinc-600
+) {
+  color: var(--text-muted) !important;
+}
+
+:is([data-theme="vercel-daylight"], [data-theme="solarized-paper"], [data-theme="arctic-frost-light"], .light) :is(
+  .bg-black\/75,
+  .bg-black\/70
+) {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+}
+
+/* Recharts Customization to Match Active Theme */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  @apply !bg-[#18181C] !border-zinc-700/80 !rounded-xl !shadow-2xl;
+  background-color: var(--bg-surface-2) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 0.75rem !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4) !important;
 }
 
 .recharts-cartesian-grid line {
-  stroke: rgba(63, 63, 70, 0.3) !important;
+  stroke: var(--border-subtle) !important;
+  opacity: 0.4;
 }
 
 /* Command palette overlay */

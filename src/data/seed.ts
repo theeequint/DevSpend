@@ -754,4 +754,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   openrouterApiKey: '',
   darkMode: true,
   activeProjectId: 'proj_nexusai',
+  activeTheme: 'obsidian-linear',
+  gradientIntensity: 'subtle',
+  cardGlow: 'subtle',
 };
