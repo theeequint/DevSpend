@@ -365,12 +365,13 @@ export const CommandPalette: React.FC = () => {
   return (
     <div
       onClick={() => setCommandPaletteOpen(false)}
-      className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-black/75 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-start justify-center p-0 sm:pt-24 sm:px-4 bg-black/75 backdrop-blur-md animate-fade-in"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-xl rounded-2xl bg-[#121215] border border-zinc-700/80 shadow-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-xl rounded-t-3xl sm:rounded-2xl bg-[#121215] border border-zinc-700/80 shadow-2xl overflow-hidden flex flex-col max-h-[85dvh] sm:max-h-[600px] animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200 pb-[env(safe-area-inset-bottom)] sm:pb-0"
       >
+        <div className="w-12 h-1.5 rounded-full bg-zinc-600/50 mx-auto my-2.5 sm:hidden shrink-0" />
         {/* Search Input Box */}
         <div className="flex items-center px-4 py-3.5 border-b border-zinc-800 gap-3">
           <Search size={18} className="text-zinc-500 shrink-0" />

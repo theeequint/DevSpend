@@ -340,8 +340,9 @@ export const LedgerView: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Segmented Control Sub-Tabs ── */}
-      <div className="flex items-center gap-1.5 border-b border-zinc-800/80 pb-1">
+      {/* ── Segmented Control Sub-Tabs (Sticky on mobile) ── */}
+      <div className="sticky top-14 z-20 bg-[#09090B]/95 backdrop-blur-md py-2 -mx-3 px-3 sm:mx-0 sm:px-0 border-b border-zinc-800/80">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
         <button
           onClick={() => setLedgerTab('overall')}
           className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
@@ -386,6 +387,7 @@ export const LedgerView: React.FC = () => {
             {expenses.length}
           </span>
         </button>
+        </div>
       </div>
 
       {/* ── Sub-Tab Contents ── */}

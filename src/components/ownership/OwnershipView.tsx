@@ -247,10 +247,10 @@ export const OwnershipView: React.FC = () => {
         </div>
       </div>
 
-      {/* ── 5 Monospace KPI Cards ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      {/* ── 5 Monospace KPI Cards (Swipeable Snap Carousel on Mobile) ── */}
+      <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none gap-3 pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 lg:grid-cols-5 sm:overflow-visible">
         {/* 1: Total Capital Raised */}
-        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3.5 flex flex-col justify-between">
+        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3.5 flex flex-col justify-between snap-start shrink-0 min-w-[200px] sm:min-w-0 sm:shrink">
           <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500">
             Total Capital Raised
           </span>
@@ -474,7 +474,7 @@ export const OwnershipView: React.FC = () => {
           </span>
         </div>
 
-        <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/70 overflow-hidden shadow-sm">
+        <div className="hidden md:block rounded-xl border border-zinc-800/80 bg-zinc-950/70 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
@@ -627,6 +627,102 @@ export const OwnershipView: React.FC = () => {
             </table>
           </div>
         </div>
+
+        {/* Mobile Stakeholder Cards (< 768px) */}
+        <div className="md:hidden space-y-2.5">
+          {stakeholders.length === 0 ? (
+            <div className="card p-6 text-center text-zinc-500">
+              <p className="text-xs">No stakeholders recorded yet.</p>
+            </div>
+          ) : (
+            stakeholders.map((s) => {
+              const pct =
+                capSummary.totalShares > 0
+                  ? (s.sharesOwned / capSummary.totalShares) * 100
+                  : 0;
+              const roleMeta = STAKEHOLDER_ROLE_META[s.role] || {
+                label: s.role,
+                color: 'zinc',
+              };
+              const hasVoting = s.hasVotingRights ?? s.votingRights ?? true;
+
+              return (
+                <div
+                  key={s.id}
+                  className="card p-3.5 space-y-2.5 border border-zinc-800/80 bg-[#121215] rounded-xl"
+                >
+                  {/* Top Row: Name + Role Badge */}
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-bold text-zinc-100 truncate">
+                      {s.name}
+                    </h4>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
+                      {roleMeta.label}
+                    </span>
+                  </div>
+
+                  {/* Middle Row: Ownership Progress Bar & Percentage */}
+                  <div className="space-y-1 pt-1 border-t border-zinc-800/60">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-zinc-400 text-[11px]">Equity Ownership:</span>
+                      <span className="text-emerald-400 font-bold">{pct.toFixed(2)}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-zinc-800/80 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.min(100, Math.max(1, pct))}%`,
+                          background: 'var(--accent-gradient, #10B981)',
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Metrics Row: Shares + Invested Capital */}
+                  <div className="grid grid-cols-2 gap-2 text-[11px] font-mono p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/60">
+                    <div>
+                      <span className="text-zinc-500 block text-[9px] uppercase">Shares</span>
+                      <span className="text-zinc-200 font-semibold">{s.sharesOwned.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 block text-[9px] uppercase">Invested</span>
+                      <span className="text-emerald-400 font-semibold">{formatCurrency(s.totalInvestedAmount, currency)}</span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Row: Voting Status & Action Buttons (44px touch targets) */}
+                  <div className="flex items-center justify-between pt-1 border-t border-zinc-800/60">
+                    <span className="text-[10px] font-mono text-zinc-500">
+                      {hasVoting ? 'Voting Power Active' : 'Non-Voting Equity'}
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingStakeholder(s);
+                          setAddStakeholderModalOpen(true);
+                        }}
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+                        title="Edit"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStakeholderToDelete(s)}
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* ── Funding Rounds & Investment History Ledger ── */}
@@ -652,7 +748,7 @@ export const OwnershipView: React.FC = () => {
           </button>
         </div>
 
-        <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/70 overflow-hidden shadow-sm">
+        <div className="hidden md:block rounded-xl border border-zinc-800/80 bg-zinc-950/70 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
@@ -730,6 +826,70 @@ export const OwnershipView: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Mobile Funding Round Cards (< 768px) */}
+        <div className="md:hidden space-y-2.5">
+          {fundingRounds.length === 0 ? (
+            <div className="card p-6 text-center text-zinc-500">
+              <p className="text-xs">No funding rounds recorded yet.</p>
+            </div>
+          ) : (
+            fundingRounds.map((f) => (
+              <div
+                key={f.id}
+                className="card p-3.5 space-y-2.5 border border-zinc-800/80 bg-[#121215] rounded-xl"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-100">{f.roundName}</h4>
+                    <span className="text-[10px] text-zinc-500 font-mono">{formatDate(f.date)}</span>
+                  </div>
+                  <span className="font-mono text-xs font-bold text-emerald-400">
+                    +{formatCurrency(f.amountRaised, currency)}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono p-2 rounded-lg bg-zinc-950/60 border border-zinc-800/60">
+                  <div>
+                    <span className="text-zinc-500 block text-[9px] uppercase">Post-Money</span>
+                    <span className="text-zinc-200 font-semibold">{formatCurrency(f.postMoneyValuation, currency)}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block text-[9px] uppercase">Dilution</span>
+                    <span className="text-amber-400 font-semibold">{(f.dilutionPercentage ?? f.equityDilutedPercent ?? 0).toFixed(2)}%</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-zinc-800/60">
+                  <span className="text-[10px] font-mono text-zinc-400">
+                    Lead: {f.leadInvestor || 'Indie / Self'}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingFundingRound(f);
+                        setAddFundingRoundModalOpen(true);
+                      }}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+                      title="Edit Round"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRoundToDelete(f)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      title="Delete Round"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

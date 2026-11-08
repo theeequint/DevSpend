@@ -299,8 +299,8 @@ export const RevenueTable: React.FC<RevenueTableProps> = ({ onEditRevenue }) => 
         </div>
       </div>
 
-      {/* Table Container */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-800/80">
+      {/* Desktop Monospace Table (>= 768px) */}
+      <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-800/80">
         <table className="w-full text-left text-xs border-collapse font-sans">
           <thead>
             <tr className="border-b border-zinc-800 bg-zinc-900/80 text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
@@ -489,6 +489,97 @@ export const RevenueTable: React.FC<RevenueTableProps> = ({ onEditRevenue }) => 
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Revenue Card-List View (< 768px) */}
+      <div className="md:hidden space-y-2.5">
+        {paginatedRevenues.length === 0 ? (
+          <div className="card p-6 text-center text-zinc-500">
+            <p className="text-xs">No revenue entries found matching current criteria.</p>
+          </div>
+        ) : (
+          paginatedRevenues.map((item) => {
+            const net = item.netAmount ?? (item.amount - (item.processingFee || 0));
+            const monthlyNet = normalizeToMonthly(net, item.billingCycle);
+            const isSelected = selectedIds.has(item.id);
+            const meta = REVENUE_CATEGORY_META[item.category];
+
+            return (
+              <div
+                key={item.id}
+                className={`card p-3.5 space-y-2.5 border rounded-xl transition-all ${
+                  isSelected ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-zinc-800/80 bg-[#121215]'
+                }`}
+              >
+                {/* Top Row: Source Badge + Title + Net Inflow */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 truncate flex-1">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shrink-0 font-semibold">
+                      {item.source}
+                    </span>
+                    <h4 className="text-xs font-semibold text-zinc-100 truncate">
+                      {item.title}
+                    </h4>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-mono text-xs font-bold text-emerald-400">
+                      +{formatCurrency(monthlyNet, currency)}
+                    </span>
+                    <span className="block text-[9px] text-zinc-500 font-mono">/mo net</span>
+                  </div>
+                </div>
+
+                {/* Middle Row: Category + Billing Cycle + Date */}
+                <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] text-zinc-400 pt-1 border-t border-zinc-800/60">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span
+                      className="text-[10px] font-mono px-2 py-0.5 rounded border flex items-center gap-1"
+                      style={{
+                        backgroundColor: meta?.color ? `${meta.color}15` : 'rgba(16, 185, 129, 0.1)',
+                        color: meta?.color || '#10B981',
+                        borderColor: meta?.color ? `${meta.color}35` : 'rgba(16, 185, 129, 0.3)',
+                      }}
+                    >
+                      {meta?.label || item.category}
+                    </span>
+                    <span className="text-[10px] font-mono text-zinc-400 px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800">
+                      {billingCycleLabel(item.billingCycle)}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-500">
+                    {formatDate(item.date)}
+                  </span>
+                </div>
+
+                {/* Bottom Action Strip (44px touch targets) */}
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60">
+                  <span className="text-[11px] text-zinc-500 font-mono">
+                    Gross: {formatCurrency(item.amount, currency)}
+                  </span>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onEditRevenue(item)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+                      title="Edit"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteRevenue(item.id)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Footer & Pagination */}

@@ -428,7 +428,7 @@ export const BurnSimulator: React.FC = () => {
             </div>
           </div>
 
-          <div className="h-[280px] w-full">
+          <div className="h-[220px] sm:h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>

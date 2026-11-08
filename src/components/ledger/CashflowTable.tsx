@@ -339,8 +339,8 @@ export const CashflowTable: React.FC<CashflowTableProps> = ({
         )}
       </div>
 
-      {/* Main Table */}
-      <div className="rounded-xl border border-zinc-800/80 bg-zinc-950/70 overflow-hidden shadow-sm">
+      {/* Desktop Table (>= 768px) */}
+      <div className="hidden md:block rounded-xl border border-zinc-800/80 bg-zinc-950/70 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>

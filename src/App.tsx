@@ -3,6 +3,9 @@ import { useSpendStore, useUserProjects } from './store/useSpendStore';
 import { useAuthStore } from './store/useAuthStore';
 import { AuthGuard } from './components/auth/AuthGuard';
 import Navbar from './components/layout/Navbar';
+import MobileBottomNav from './components/layout/MobileBottomNav';
+import MobileQuickActionFab from './components/layout/MobileQuickActionFab';
+import MobileDebugTimerBar from './components/layout/MobileDebugTimerBar';
 import { WelcomeHomeView } from './components/onboarding/WelcomeHomeView';
 import DashboardView from './components/dashboard/DashboardView';
 import LedgerView from './components/ledger/LedgerView';
@@ -82,7 +85,7 @@ export const AppContent: React.FC = () => {
       <Navbar />
 
       {/* Main Content Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28 md:pb-12">
         {shouldRenderHome ? (
           <WelcomeHomeView />
         ) : (
@@ -126,7 +129,13 @@ export const AppContent: React.FC = () => {
       />
 
       {/* High-density Minimalist Developer Footer */}
-      <footer className="border-t border-zinc-800/60 py-4 px-4 sm:px-6 bg-[#09090B]">
+      {/* Mobile-Only Native Bottom Navigation, Quick FAB & Debug Island */}
+      <MobileDebugTimerBar />
+      <MobileQuickActionFab />
+      <MobileBottomNav />
+
+      {/* High-density Minimalist Developer Footer (Desktop only) */}
+      <footer className="hidden md:block border-t border-zinc-800/60 py-4 px-4 sm:px-6 bg-[#09090B]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-500 font-mono">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />

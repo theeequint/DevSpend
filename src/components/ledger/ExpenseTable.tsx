@@ -308,8 +308,8 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
         </div>
       </div>
 
-      {/* Responsive Table Container */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-800/80">
+      {/* Desktop Monospace Table (>= 768px) */}
+      <div className="hidden md:block overflow-x-auto rounded-lg border border-zinc-800/80">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
             <tr className="border-b border-zinc-800 bg-zinc-900/80 text-zinc-400 font-mono text-[11px] uppercase tracking-wider">
@@ -534,6 +534,105 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({ onEditExpense }) => 
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card-List View (< 768px) */}
+      <div className="md:hidden space-y-2.5">
+        {paginatedExpenses.length === 0 ? (
+          <div className="card p-6 text-center text-zinc-500">
+            <p className="text-xs">No expenses found matching the current criteria.</p>
+          </div>
+        ) : (
+          paginatedExpenses.map((item) => {
+            const monthly = normalizeToMonthly(item.amount, item.billingCycle);
+            const isSelected = selectedIds.has(item.id);
+
+            return (
+              <div
+                key={item.id}
+                className={`card p-3.5 space-y-2.5 border rounded-xl transition-all ${
+                  isSelected ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-zinc-800/80 bg-[#121215]'
+                }`}
+              >
+                {/* Top Row: Vendor Badge + Title + Amount */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 truncate flex-1">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 shrink-0">
+                      {item.vendor}
+                    </span>
+                    <h4 className="text-xs font-semibold text-zinc-100 truncate">
+                      {item.title}
+                    </h4>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-mono text-xs font-bold text-rose-400">
+                      -{formatCurrency(monthly, currency)}
+                    </span>
+                    <span className="block text-[9px] text-zinc-500 font-mono">/mo</span>
+                  </div>
+                </div>
+
+                {/* Middle Row: Category + Billing Cycle + Date */}
+                <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] text-zinc-400 pt-1 border-t border-zinc-800/60">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <CategoryBadge category={item.category} />
+                    <span className="text-[10px] font-mono text-zinc-400 px-1.5 py-0.2 rounded bg-zinc-900 border border-zinc-800">
+                      {billingCycleLabel(item.billingCycle)}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-500">
+                    {formatDate(item.date)}
+                  </span>
+                </div>
+
+                {/* Bottom Action Strip (44px touch targets) */}
+                <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60">
+                  <button
+                    type="button"
+                    onClick={() => updateExpense(item.id, { isEssential: !item.isEssential })}
+                    className={`min-h-[44px] px-2.5 rounded-lg flex items-center gap-1.5 text-xs transition-colors cursor-pointer ${
+                      item.isEssential
+                        ? 'text-amber-400 bg-amber-500/10'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    <Star size={15} fill={item.isEssential ? 'currentColor' : 'none'} />
+                    <span className="text-[11px]">
+                      {item.isEssential ? 'Essential' : 'Discretionary'}
+                    </span>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onEditExpense(item)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+                      title="Edit"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => duplicateExpense(item.id)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors cursor-pointer"
+                      title="Duplicate"
+                    >
+                      <Copy size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteExpense(item.id)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Footer & Pagination */}

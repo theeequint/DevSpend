@@ -3,10 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
     <title>DevSpend — Developer Financial Intelligence</title>
-    <meta name="description" content="Ultra-minimalist FinOps platform for solo developers and indie hackers. Track spend, debug costs, and optimize your stack with AI." />
-    <!-- Inter font -->
+    <meta
+      name="description"
+      content="Ultra-minimalist FinOps platform for solo developers and indie hackers. Track spend, debug costs, and optimize your stack with AI."
+    />
+    <meta name="theme-color" content="#09090B" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="DevSpend" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,8 +28,8 @@
       rel="stylesheet"
     />
   </head>
-  <body class="bg-[#09090B] text-zinc-100 font-sans antialiased">
-    <div id="root"></div>
+  <body class="bg-[#09090B] text-zinc-100 font-sans antialiased overflow-x-hidden min-h-[100dvh] select-none sm:select-auto">
+    <div id="root" class="min-h-[100dvh] flex flex-col"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

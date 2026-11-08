@@ -608,6 +608,19 @@ export function applyThemeToDOM(
 
   root.setAttribute('data-theme', theme.id);
 
+  // Dynamically synchronize mobile browser status bar theme color
+  try {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', theme.colors.canvas);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.content = theme.colors.canvas;
+      document.head.appendChild(meta);
+    }
+  } catch {}
+
   if (theme.isDark) {
     root.classList.add('dark');
     root.classList.remove('light');

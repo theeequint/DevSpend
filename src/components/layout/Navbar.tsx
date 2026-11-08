@@ -426,24 +426,6 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Nav Drawer Bar */}
-        <div className="md:hidden flex items-center justify-around border-t border-zinc-800/80 px-2 py-1 bg-zinc-950">
-          {navItems.map((item) => {
-            const isActive = activeView === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveView(item.id)}
-                className={`flex flex-col items-center py-1 px-2 rounded text-[11px] font-medium cursor-pointer ${
-                  isActive ? 'text-emerald-400 font-bold' : 'text-zinc-500'
-                }`}
-              >
-                {item.icon}
-                <span className="mt-0.5">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
       </header>
 
       {/* GitHub Sync Modal */}

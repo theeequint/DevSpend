@@ -212,12 +212,13 @@ export const TopRightThemeSwitcher: React.FC<TopRightThemeSwitcherProps> = ({
 
           <div
             ref={popoverRef}
-            className="absolute right-0 mt-2 w-[340px] sm:w-[480px] max-h-[88vh] rounded-2xl bg-[#121215]/95 backdrop-blur-2xl border border-zinc-700/80 shadow-2xl z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+            className="fixed inset-x-0 bottom-0 sm:inset-auto sm:right-0 sm:mt-2 sm:absolute w-full sm:w-[480px] max-h-[88dvh] rounded-t-3xl sm:rounded-2xl bg-[#121215]/98 backdrop-blur-2xl border border-zinc-700/80 shadow-2xl z-50 flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 sm:slide-in-from-top-2 duration-200 pb-[env(safe-area-inset-bottom)] sm:pb-0"
             style={{
               borderColor: activeTheme.colors.accentPrimary,
               boxShadow: `0 20px 45px -10px rgba(0, 0, 0, 0.7), 0 0 25px ${activeTheme.colors.accentGlow}`,
             }}
           >
+            <div className="w-12 h-1.5 rounded-full bg-zinc-600/50 mx-auto my-2.5 sm:hidden shrink-0" />
             {/* ── Header ── */}
             <div className="p-3.5 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-950/60 shrink-0">
               <div className="flex items-center gap-2">
