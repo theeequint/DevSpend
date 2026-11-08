@@ -20,6 +20,7 @@ import {
   Shield,
   Home,
   Database,
+  PieChart,
 } from 'lucide-react';
 import { useSpendStore, useActiveProject, useUserProjects } from '../../store/useSpendStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -65,6 +66,7 @@ export const Navbar: React.FC = () => {
     { id: 'home', label: 'Projects', icon: <Home size={14} /> },
     { id: 'dashboard', label: 'Overview', icon: <LayoutDashboard size={14} /> },
     { id: 'ledger', label: 'Ledger', icon: <Receipt size={14} /> },
+    { id: 'ownership', label: 'Ownership', icon: <PieChart size={14} /> },
     { id: 'simulator', label: 'Simulator', icon: <Layers size={14} /> },
     { id: 'audit', label: 'AI Auditor', icon: <Sparkles size={14} /> },
     { id: 'settings', label: 'Settings', icon: <Settings size={14} /> },

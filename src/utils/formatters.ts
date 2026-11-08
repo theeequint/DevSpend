@@ -2,7 +2,15 @@
 // DevSpend — Utility Formatters (Division-by-Zero immune)
 // ============================================================
 
-import { Currency, ExchangeRates, ExpenseCategory } from '../types';
+import {
+  Currency,
+  ExchangeRates,
+  ExpenseCategory,
+  RevenueCategory,
+  StakeholderRole,
+  EquityInstrument,
+  RevenuePreset,
+} from '../types';
 
 // Static fallback exchange rates (1 USD = X)
 export const EXCHANGE_RATES: ExchangeRates = {
@@ -182,6 +190,173 @@ export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
   devtools_saas: '#06b6d4',
   domains_legal_misc: '#f43f5e',
 };
+
+// ============================================================
+// Revenue category metadata & colors
+// ============================================================
+export const REVENUE_CATEGORY_META: Record<
+  RevenueCategory,
+  { label: string; color: string; bgColor: string; textColor: string; borderColor: string }
+> = {
+  mrr_subscriptions: {
+    label: 'MRR Subscriptions',
+    color: '#10b981',
+    bgColor: 'bg-emerald-500/10',
+    textColor: 'text-emerald-400',
+    borderColor: 'border-emerald-500/30',
+  },
+  one_time_sales: {
+    label: 'One-Time Sales',
+    color: '#3b82f6',
+    bgColor: 'bg-blue-500/10',
+    textColor: 'text-blue-400',
+    borderColor: 'border-blue-500/30',
+  },
+  client_services: {
+    label: 'Client Services',
+    color: '#8b5cf6',
+    bgColor: 'bg-violet-500/10',
+    textColor: 'text-violet-400',
+    borderColor: 'border-violet-500/30',
+  },
+  grants_credits: {
+    label: 'Grants & Credits',
+    color: '#06b6d4',
+    bgColor: 'bg-cyan-500/10',
+    textColor: 'text-cyan-400',
+    borderColor: 'border-cyan-500/30',
+  },
+  capital_addition: {
+    label: 'Capital Additions',
+    color: '#f59e0b',
+    bgColor: 'bg-amber-500/10',
+    textColor: 'text-amber-400',
+    borderColor: 'border-amber-500/30',
+  },
+  other_income: {
+    label: 'Other Income',
+    color: '#ec4899',
+    bgColor: 'bg-pink-500/10',
+    textColor: 'text-pink-400',
+    borderColor: 'border-pink-500/30',
+  },
+};
+
+// ============================================================
+// Stakeholder role metadata
+// ============================================================
+export const STAKEHOLDER_ROLE_META: Record<
+  StakeholderRole,
+  { label: string; color: string; badge: string }
+> = {
+  founder: {
+    label: 'Founder',
+    color: '#10b981',
+    badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+  },
+  co_founder: {
+    label: 'Co-Founder',
+    color: '#059669',
+    badge: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+  },
+  angel_investor: {
+    label: 'Angel Investor',
+    color: '#3b82f6',
+    badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+  },
+  vc_fund: {
+    label: 'VC Fund',
+    color: '#8b5cf6',
+    badge: 'bg-violet-500/10 text-violet-400 border-violet-500/30',
+  },
+  employee: {
+    label: 'Employee / Key Hire',
+    color: '#0ea5e9',
+    badge: 'bg-sky-500/10 text-sky-400 border-sky-500/30',
+  },
+  advisor: {
+    label: 'Advisor',
+    color: '#f59e0b',
+    badge: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+  },
+  esop_pool: {
+    label: 'ESOP Pool',
+    color: '#06b6d4',
+    badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
+  },
+  strategic_partner: {
+    label: 'Strategic Partner',
+    color: '#ec4899',
+    badge: 'bg-pink-500/10 text-pink-400 border-pink-500/30',
+  },
+};
+
+export const EQUITY_INSTRUMENT_META: Record<
+  EquityInstrument,
+  { label: string; short: string }
+> = {
+  common_stock: { label: 'Common Stock', short: 'Common' },
+  preferred_stock: { label: 'Preferred Stock', short: 'Preferred' },
+  preferred_equity: { label: 'Preferred Equity', short: 'Preferred' },
+  safe: { label: 'SAFE', short: 'SAFE' },
+  safe_note: { label: 'SAFE Note', short: 'SAFE' },
+  convertible_note: { label: 'Convertible Note', short: 'Conv. Note' },
+  options_esop: { label: 'Stock Options / ESOP', short: 'ESOP' },
+  revenue_share: { label: 'Revenue Share Agreement', short: 'Rev-Share' },
+  warrants: { label: 'Warrants', short: 'Warrants' },
+};
+
+// Quick presets for revenue additions
+export const REVENUE_PRESETS: RevenuePreset[] = [
+  {
+    label: 'Stripe MRR Payout',
+    source: 'Stripe',
+    category: 'mrr_subscriptions',
+    billingCycle: 'monthly',
+    typicalAmount: 2340,
+    typicalFeePercent: 2.9,
+  },
+  {
+    label: 'Enterprise Annual Contract',
+    source: 'Direct Wire',
+    category: 'one_time_sales',
+    billingCycle: 'annual',
+    typicalAmount: 12000,
+    typicalFeePercent: 0,
+  },
+  {
+    label: 'App Store Proceeds',
+    source: 'Apple App Store',
+    category: 'mrr_subscriptions',
+    billingCycle: 'monthly',
+    typicalAmount: 850,
+    typicalFeePercent: 15,
+  },
+  {
+    label: 'Custom Client Engineering',
+    source: 'Client Direct',
+    category: 'client_services',
+    billingCycle: 'one_time',
+    typicalAmount: 3500,
+    typicalFeePercent: 0,
+  },
+  {
+    label: 'AWS Activate Cloud Grant',
+    source: 'AWS',
+    category: 'grants_credits',
+    billingCycle: 'one_time',
+    typicalAmount: 5000,
+    typicalFeePercent: 0,
+  },
+  {
+    label: 'Founder Treasury Cash Injection',
+    source: 'Founder Personal',
+    category: 'capital_addition',
+    billingCycle: 'one_time',
+    typicalAmount: 10000,
+    typicalFeePercent: 0,
+  },
+];
 
 // ============================================================
 // Runway urgency color

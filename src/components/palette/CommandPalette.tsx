@@ -17,6 +17,8 @@ import {
   Home,
   Trash2,
   LogOut,
+  PieChart,
+  TrendingUp,
 } from 'lucide-react';
 import { useSpendStore, useActiveProject, useUserProjects } from '../../store/useSpendStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -37,6 +39,8 @@ export const CommandPalette: React.FC = () => {
     commandPaletteOpen,
     setCommandPaletteOpen,
     setAddExpenseModalOpen,
+    setAddRevenueModalOpen,
+    setAddStakeholderModalOpen,
     setCreateProjectModalOpen,
     setDeleteProjectModal,
     setActiveView,
@@ -111,6 +115,30 @@ export const CommandPalette: React.FC = () => {
       },
     },
     {
+      id: 'new_revenue',
+      category: 'Actions',
+      label: 'New Revenue / Funds',
+      description: 'Record recurring MRR, client contracts, grants, or capital additions',
+      icon: <TrendingUp size={16} className="text-emerald-400" />,
+      shortcut: 'R',
+      action: () => {
+        setCommandPaletteOpen(false);
+        setAddRevenueModalOpen(true);
+      },
+    },
+    {
+      id: 'new_stakeholder',
+      category: 'Actions',
+      label: 'New Stakeholder / Equity',
+      description: 'Register founder, angel investor, SAFE, or ESOP option pool',
+      icon: <PieChart size={16} className="text-teal-400" />,
+      shortcut: 'K',
+      action: () => {
+        setCommandPaletteOpen(false);
+        setAddStakeholderModalOpen(true);
+      },
+    },
+    {
       id: 'new_expense',
       category: 'Actions',
       label: 'New Expense',
@@ -178,13 +206,25 @@ export const CommandPalette: React.FC = () => {
     {
       id: 'view_ledger',
       category: 'Navigation',
-      label: 'View Expense Ledger',
-      description: 'High-speed interactive data grid with filters and sorting',
+      label: 'View Financial Ledger',
+      description: 'Triple-tab cashflow statement, revenues, and expense data grid',
       icon: <Terminal size={16} className="text-amber-400" />,
       shortcut: 'L',
       action: () => {
         setCommandPaletteOpen(false);
         setActiveView('ledger');
+      },
+    },
+    {
+      id: 'view_ownership',
+      category: 'Navigation',
+      label: 'Ownership & Cap Table',
+      description: 'Equity capitalization, stakeholder registry, and dilution simulator',
+      icon: <PieChart size={16} className="text-emerald-400" />,
+      shortcut: 'O',
+      action: () => {
+        setCommandPaletteOpen(false);
+        setActiveView('ownership');
       },
     },
     {

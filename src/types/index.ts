@@ -42,6 +42,7 @@ export type AppView =
   | 'home'
   | 'dashboard'
   | 'ledger'
+  | 'ownership'
   | 'simulator'
   | 'audit'
   | 'settings';
@@ -165,6 +166,115 @@ export interface ExpenseItem {
 }
 
 // ============================================================
+// Multi-Tenant Revenue Item (Earnings & Capital Additions)
+// ============================================================
+export type RevenueCategory =
+  | 'mrr_subscriptions'
+  | 'one_time_sales'
+  | 'client_services'
+  | 'grants_credits'
+  | 'capital_addition'
+  | 'other_income';
+
+export interface RevenueItem {
+  id: string;
+  projectId: string;
+  ownerUserId: string;
+  title: string;
+  source: string;
+  category: RevenueCategory;
+  billingCycle: BillingCycle;
+  amount: number;
+  feeDeducted?: number;
+  processingFee?: number;
+  netAmount: number;
+  date: string;
+  isRecurring: boolean;
+  notes?: string;
+}
+
+// ============================================================
+// Multi-Tenant Ownership & Cap-Table Entities
+// ============================================================
+export type StakeholderRole =
+  | 'founder'
+  | 'co_founder'
+  | 'angel_investor'
+  | 'vc_fund'
+  | 'employee'
+  | 'esop_pool'
+  | 'advisor'
+  | 'strategic_partner';
+
+export type EquityInstrument =
+  | 'common_stock'
+  | 'preferred_stock'
+  | 'preferred_equity'
+  | 'safe'
+  | 'safe_note'
+  | 'convertible_note'
+  | 'options_esop'
+  | 'revenue_share'
+  | 'warrants';
+
+export interface Stakeholder {
+  id: string;
+  projectId: string;
+  ownerUserId: string;
+  name: string;
+  role: StakeholderRole;
+  sharesOwned: number;
+  ownershipPercentage?: number;
+  totalInvestedAmount: number;
+  investmentDate?: string;
+  dateJoined?: string;
+  roundName?: string;
+  investmentRound?: string;
+  instrumentType?: EquityInstrument;
+  instrument?: EquityInstrument;
+  valuationCap?: number;
+  votingRights?: boolean;
+  hasVotingRights?: boolean;
+  vestingSchedule?: string;
+  notes?: string;
+}
+
+export interface FundingRound {
+  id: string;
+  projectId: string;
+  ownerUserId?: string;
+  roundName: string;
+  amountRaised: number;
+  preMoneyValuation: number;
+  postMoneyValuation: number;
+  equityDilutedPercent?: number;
+  dilutionPercentage?: number;
+  sharePrice?: number;
+  sharesIssued?: number;
+  date: string;
+  leadInvestor?: string;
+  addToCashReserve?: boolean;
+  notes?: string;
+}
+
+// Unified Cashflow Item for 3-Tab Ledger
+export interface CashflowItem {
+  id: string;
+  type: 'revenue' | 'expense';
+  date: string;
+  title: string;
+  entity: string; // vendor or source
+  categoryKey: string;
+  categoryLabel: string;
+  billingCycle: BillingCycle;
+  grossAmount: number;
+  netAmount: number; // positive for revenue, negative for expense
+  feeDeducted?: number;
+  notes: string;
+  originalItem: RevenueItem | ExpenseItem;
+}
+
+// ============================================================
 // Multi-Tenant Debug Session
 // ============================================================
 export interface DebugSession {
@@ -285,6 +395,10 @@ export type CommandAction =
   | 'new_project'
   | 'delete_project'
   | 'new_expense'
+  | 'new_revenue'
+  | 'ownership'
+  | 'new_stakeholder'
+  | 'new_funding_round'
   | 'toggle_debug_timer'
   | 'switch_project'
   | 'run_ai_audit'
@@ -310,6 +424,15 @@ export interface ExpensePreset {
   category: ExpenseCategory;
   billingCycle: BillingCycle;
   typicalAmount: number;
+}
+
+export interface RevenuePreset {
+  label: string;
+  source: string;
+  category: RevenueCategory;
+  billingCycle: BillingCycle;
+  typicalAmount: number;
+  typicalFeePercent?: number;
 }
 
 // ============================================================

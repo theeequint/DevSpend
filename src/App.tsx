@@ -6,11 +6,15 @@ import Navbar from './components/layout/Navbar';
 import { WelcomeHomeView } from './components/onboarding/WelcomeHomeView';
 import DashboardView from './components/dashboard/DashboardView';
 import LedgerView from './components/ledger/LedgerView';
+import OwnershipView from './components/ownership/OwnershipView';
 import BurnSimulator from './components/simulator/BurnSimulator';
 import AuditView from './components/audit/AuditView';
 import SettingsView from './components/settings/SettingsView';
 import CommandPalette from './components/palette/CommandPalette';
 import AddExpenseModal from './components/ledger/AddExpenseModal';
+import AddRevenueModal from './components/ledger/AddRevenueModal';
+import AddStakeholderModal from './components/ownership/AddStakeholderModal';
+import AddFundingRoundModal from './components/ownership/AddFundingRoundModal';
 import CreateProjectModal from './components/project/CreateProjectModal';
 import { DeleteProjectModal } from './components/project/DeleteProjectModal';
 
@@ -22,6 +26,12 @@ export const AppContent: React.FC = () => {
     tickDebugTimer,
     addExpenseModalOpen,
     setAddExpenseModalOpen,
+    addRevenueModalOpen,
+    setAddRevenueModalOpen,
+    addStakeholderModalOpen,
+    setAddStakeholderModalOpen,
+    addFundingRoundModalOpen,
+    setAddFundingRoundModalOpen,
     createProjectModalOpen,
     setCreateProjectModalOpen,
   } = useSpendStore();
@@ -67,6 +77,7 @@ export const AppContent: React.FC = () => {
           <>
             {activeView === 'dashboard' && <DashboardView />}
             {activeView === 'ledger' && <LedgerView />}
+            {activeView === 'ownership' && <OwnershipView />}
             {activeView === 'simulator' && <BurnSimulator />}
             {activeView === 'audit' && <AuditView />}
             {activeView === 'settings' && <SettingsView />}
@@ -79,6 +90,18 @@ export const AppContent: React.FC = () => {
       <AddExpenseModal
         open={addExpenseModalOpen}
         onClose={() => setAddExpenseModalOpen(false)}
+      />
+      <AddRevenueModal
+        open={addRevenueModalOpen}
+        onClose={() => setAddRevenueModalOpen(false)}
+      />
+      <AddStakeholderModal
+        open={addStakeholderModalOpen}
+        onClose={() => setAddStakeholderModalOpen(false)}
+      />
+      <AddFundingRoundModal
+        open={addFundingRoundModalOpen}
+        onClose={() => setAddFundingRoundModalOpen(false)}
       />
       <CreateProjectModal
         open={createProjectModalOpen}

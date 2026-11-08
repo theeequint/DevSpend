@@ -1,6 +1,6 @@
 // ============================================================
 // DevSpend — Zustand Store (persistent to localStorage)
-// Multi-Tenant Isolation & Cascading Project Deletion
+// Full-Spectrum Financial Ledger & Cap-Table Ownership Engine
 // ============================================================
 
 import { create } from 'zustand';
@@ -9,6 +9,9 @@ import { useMemo } from 'react';
 import {
   Project,
   ExpenseItem,
+  RevenueItem,
+  Stakeholder,
+  FundingRound,
   DebugSession,
   AiAuditReport,
   AppSettings,
@@ -18,19 +21,31 @@ import {
 import {
   SEED_PROJECTS,
   SEED_EXPENSES,
+  SEED_REVENUES,
+  SEED_STAKEHOLDERS,
+  SEED_FUNDING_ROUNDS,
   SEED_DEBUG_SESSIONS,
   SEED_AI_AUDIT,
   DEFAULT_SETTINGS,
 } from '../data/seed';
-import { generateId, isoNow, normalizeToMonthly } from '../utils/formatters';
+import {
+  generateId,
+  isoNow,
+  normalizeToMonthly,
+  safeDiv,
+  safeNum,
+} from '../utils/formatters';
 
 // ============================================================
 // Store shape
 // ============================================================
 interface DevSpendState {
-  // Multi-tenant data
+  // Multi-tenant financial data
   projects: Project[];
   expenses: ExpenseItem[];
+  revenues: RevenueItem[];
+  stakeholders: Stakeholder[];
+  fundingRounds: FundingRound[];
   debugSessions: DebugSession[];
   auditReports: AiAuditReport[];
   settings: AppSettings;
@@ -49,8 +64,15 @@ interface DevSpendState {
 
   // UI state (not persisted)
   activeView: AppView;
+  ledgerTab: 'overall' | 'revenue' | 'expenses';
   commandPaletteOpen: boolean;
   addExpenseModalOpen: boolean;
+  addRevenueModalOpen: boolean;
+  addStakeholderModalOpen: boolean;
+  addFundingRoundModalOpen: boolean;
+  editingRevenue: RevenueItem | null;
+  editingStakeholder: Stakeholder | null;
+  editingFundingRound: FundingRound | null;
   createProjectModalOpen: boolean;
   deleteProjectModalOpen: boolean;
   projectToDeleteId: string | null;
@@ -77,6 +99,23 @@ interface DevSpendState {
     recommendationId: string
   ) => void;
 
+  // ── Revenue actions ─────────────────────────────────────────
+  addRevenue: (revenue: Omit<RevenueItem, 'id'>) => string;
+  updateRevenue: (id: string, updates: Partial<RevenueItem>) => void;
+  deleteRevenue: (id: string) => void;
+  deleteRevenues: (ids: string[]) => void;
+  clearProjectRevenues: (projectId: string) => void;
+
+  // ── Stakeholder & Ownership actions ─────────────────────────
+  addStakeholder: (stakeholder: Omit<Stakeholder, 'id'>) => string;
+  updateStakeholder: (id: string, updates: Partial<Stakeholder>) => void;
+  deleteStakeholder: (id: string) => void;
+
+  // ── Funding Round actions ───────────────────────────────────
+  addFundingRound: (round: Omit<FundingRound, 'id'>) => string;
+  updateFundingRound: (id: string, updates: Partial<FundingRound>) => void;
+  deleteFundingRound: (id: string) => void;
+
   // ── Debug timer actions ─────────────────────────────────────
   startDebugTimer: (params: {
     projectId: string;
@@ -102,10 +141,17 @@ interface DevSpendState {
   updateSettings: (updates: Partial<AppSettings>) => void;
   toggleDarkMode: () => void;
 
-  // ── UI actions ───────────────────────────────────────────────
+  // ── UI modal & view actions ──────────────────────────────────
   setActiveView: (view: AppView) => void;
+  setLedgerTab: (tab: 'overall' | 'revenue' | 'expenses') => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setAddExpenseModalOpen: (open: boolean) => void;
+  setAddRevenueModalOpen: (open: boolean, revenue?: RevenueItem | null) => void;
+  setAddStakeholderModalOpen: (open: boolean, stakeholder?: Stakeholder | null) => void;
+  setAddFundingRoundModalOpen: (open: boolean, round?: FundingRound | null) => void;
+  setEditingRevenue: (revenue: RevenueItem | null) => void;
+  setEditingStakeholder: (stakeholder: Stakeholder | null) => void;
+  setEditingFundingRound: (round: FundingRound | null) => void;
   setCreateProjectModalOpen: (open: boolean) => void;
   setSimulatorParams: (params: Partial<SimulatorParams>) => void;
 
@@ -121,9 +167,12 @@ interface DevSpendState {
 export const useSpendStore = create<DevSpendState>()(
   persist(
     (set, get) => ({
-      // Initial data
+      // Initial financial datasets
       projects: SEED_PROJECTS,
       expenses: SEED_EXPENSES,
+      revenues: SEED_REVENUES,
+      stakeholders: SEED_STAKEHOLDERS,
+      fundingRounds: SEED_FUNDING_ROUNDS,
       debugSessions: SEED_DEBUG_SESSIONS,
       auditReports: [SEED_AI_AUDIT],
       settings: DEFAULT_SETTINGS,
@@ -131,8 +180,15 @@ export const useSpendStore = create<DevSpendState>()(
 
       // Initial UI state
       activeView: 'dashboard',
+      ledgerTab: 'overall',
       commandPaletteOpen: false,
       addExpenseModalOpen: false,
+      addRevenueModalOpen: false,
+      addStakeholderModalOpen: false,
+      addFundingRoundModalOpen: false,
+      editingRevenue: null,
+      editingStakeholder: null,
+      editingFundingRound: null,
       createProjectModalOpen: false,
       deleteProjectModalOpen: false,
       projectToDeleteId: null,
@@ -176,13 +232,15 @@ export const useSpendStore = create<DevSpendState>()(
         set(s => ({
           projects: remainingProjects,
           expenses: s.expenses.filter(e => e.projectId !== id),
+          revenues: s.revenues.filter(r => r.projectId !== id),
+          stakeholders: s.stakeholders.filter(stk => stk.projectId !== id),
+          fundingRounds: s.fundingRounds.filter(f => f.projectId !== id),
           debugSessions: s.debugSessions.filter(d => d.projectId !== id),
           auditReports: s.auditReports.filter(a => a.projectId !== id),
           settings: {
             ...s.settings,
             activeProjectId: newActiveId,
           },
-          // If no projects remain, transition automatically to home
           activeView: remainingProjects.length === 0 ? 'home' : s.activeView,
           deleteProjectModalOpen: false,
           projectToDeleteId: null,
@@ -268,6 +326,114 @@ export const useSpendStore = create<DevSpendState>()(
             ),
           })),
         }));
+      },
+
+      // ── Revenue actions ───────────────────────────────────────
+      addRevenue: (revenueData) => {
+        const id = `rev_${generateId()}`;
+        const netAmount = safeNum(revenueData.amount) - safeNum(revenueData.feeDeducted || 0);
+        const revenue: RevenueItem = {
+          ...revenueData,
+          id,
+          netAmount: Math.max(0, netAmount),
+        };
+        set(s => ({
+          revenues: [...s.revenues, revenue],
+          addRevenueModalOpen: false,
+          editingRevenue: null,
+        }));
+        return id;
+      },
+
+      updateRevenue: (id, updates) => {
+        set(s => ({
+          revenues: s.revenues.map(r => {
+            if (r.id !== id) return r;
+            const updated = { ...r, ...updates };
+            const netAmount = safeNum(updated.amount) - safeNum(updated.feeDeducted || 0);
+            return {
+              ...updated,
+              netAmount: Math.max(0, netAmount),
+            };
+          }),
+          editingRevenue: null,
+        }));
+      },
+
+      deleteRevenue: (id) => {
+        set(s => ({ revenues: s.revenues.filter(r => r.id !== id) }));
+      },
+
+      deleteRevenues: (ids) => {
+        const idSet = new Set(ids);
+        set(s => ({
+          revenues: s.revenues.filter(r => !idSet.has(r.id)),
+        }));
+      },
+
+      clearProjectRevenues: (projectId) => {
+        set(s => ({
+          revenues: s.revenues.filter(r => r.projectId !== projectId),
+        }));
+      },
+
+      // ── Stakeholder & Ownership actions ─────────────────────────
+      addStakeholder: (stakeholderData) => {
+        const id = `stk_${generateId()}`;
+        const stakeholder: Stakeholder = { ...stakeholderData, id };
+        set(s => ({
+          stakeholders: [...s.stakeholders, stakeholder],
+          addStakeholderModalOpen: false,
+          editingStakeholder: null,
+        }));
+        return id;
+      },
+
+      updateStakeholder: (id, updates) => {
+        set(s => ({
+          stakeholders: s.stakeholders.map(stk => (stk.id === id ? { ...stk, ...updates } : stk)),
+          editingStakeholder: null,
+        }));
+      },
+
+      deleteStakeholder: (id) => {
+        set(s => ({ stakeholders: s.stakeholders.filter(stk => stk.id !== id) }));
+      },
+
+      // ── Funding Round actions ───────────────────────────────────
+      addFundingRound: (roundData) => {
+        const id = `rnd_${generateId()}`;
+        const round: FundingRound = { ...roundData, id };
+
+        set(s => {
+          // If addToCashReserve is true, update project totalCashReserve
+          const updatedProjects = roundData.addToCashReserve
+            ? s.projects.map(p =>
+                p.id === roundData.projectId
+                  ? { ...p, totalCashReserve: p.totalCashReserve + safeNum(roundData.amountRaised) }
+                  : p
+              )
+            : s.projects;
+
+          return {
+            fundingRounds: [...s.fundingRounds, round],
+            projects: updatedProjects,
+            addFundingRoundModalOpen: false,
+            editingFundingRound: null,
+          };
+        });
+        return id;
+      },
+
+      updateFundingRound: (id, updates) => {
+        set(s => ({
+          fundingRounds: s.fundingRounds.map(f => (f.id === id ? { ...f, ...updates } : f)),
+          editingFundingRound: null,
+        }));
+      },
+
+      deleteFundingRound: (id) => {
+        set(s => ({ fundingRounds: s.fundingRounds.filter(f => f.id !== id) }));
       },
 
       // ── Debug timer ───────────────────────────────────────────
@@ -438,23 +604,45 @@ export const useSpendStore = create<DevSpendState>()(
         }));
       },
 
-      // ── UI ────────────────────────────────────────────────────
+      // ── UI Modal & View Actions ────────────────────────────────
       setActiveView: (view) => set({ activeView: view }),
+      setLedgerTab: (tab) => set({ ledgerTab: tab }),
       setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
       setAddExpenseModalOpen: (open) => set({ addExpenseModalOpen: open }),
+      setAddRevenueModalOpen: (open, revenue = null) =>
+        set({ addRevenueModalOpen: open, editingRevenue: revenue }),
+      setAddStakeholderModalOpen: (open, stakeholder = null) =>
+        set({ addStakeholderModalOpen: open, editingStakeholder: stakeholder }),
+      setAddFundingRoundModalOpen: (open, round = null) =>
+        set({ addFundingRoundModalOpen: open, editingFundingRound: round }),
+      setEditingRevenue: (revenue) => set({ editingRevenue: revenue }),
+      setEditingStakeholder: (stakeholder) => set({ editingStakeholder: stakeholder }),
+      setEditingFundingRound: (round) => set({ editingFundingRound: round }),
       setCreateProjectModalOpen: (open) => set({ createProjectModalOpen: open }),
       setSimulatorParams: (params) => {
         set(s => ({ simulatorParams: { ...s.simulatorParams, ...params } }));
       },
 
-      // ── Data portability ──────────────────────────────────────
+      // ── Data portability ────────────────────────────────────────
       exportFullState: () => {
-        const { projects, expenses, debugSessions, auditReports, settings } = get();
+        const {
+          projects,
+          expenses,
+          revenues,
+          stakeholders,
+          fundingRounds,
+          debugSessions,
+          auditReports,
+          settings,
+        } = get();
         return {
-          version: 'devspend_v1',
+          version: 'devspend_v2',
           exportedAt: isoNow(),
           projects,
           expenses,
+          revenues,
+          stakeholders,
+          fundingRounds,
           debugSessions,
           auditReports,
           settings,
@@ -465,6 +653,9 @@ export const useSpendStore = create<DevSpendState>()(
         set(s => ({
           projects: data.projects ?? s.projects,
           expenses: data.expenses ?? s.expenses,
+          revenues: data.revenues ?? s.revenues,
+          stakeholders: data.stakeholders ?? s.stakeholders,
+          fundingRounds: data.fundingRounds ?? s.fundingRounds,
           debugSessions: data.debugSessions ?? s.debugSessions,
           auditReports: data.auditReports ?? s.auditReports,
           settings: data.settings ?? s.settings,
@@ -475,20 +666,27 @@ export const useSpendStore = create<DevSpendState>()(
         set({
           projects: SEED_PROJECTS,
           expenses: SEED_EXPENSES,
+          revenues: SEED_REVENUES,
+          stakeholders: SEED_STAKEHOLDERS,
+          fundingRounds: SEED_FUNDING_ROUNDS,
           debugSessions: SEED_DEBUG_SESSIONS,
           auditReports: [SEED_AI_AUDIT],
           settings: DEFAULT_SETTINGS,
           activeDebugTimer: null,
           activeView: 'dashboard',
+          ledgerTab: 'overall',
         });
       },
     }),
     {
-      name: 'devspend_v1_storage',
+      name: 'devspend_v2_storage',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         projects: state.projects,
         expenses: state.expenses,
+        revenues: state.revenues,
+        stakeholders: state.stakeholders,
+        fundingRounds: state.fundingRounds,
         debugSessions: state.debugSessions,
         auditReports: state.auditReports,
         settings: state.settings,
@@ -501,9 +699,6 @@ export const useSpendStore = create<DevSpendState>()(
 // Multi-Tenant Selector Hooks (Safe against getSnapshot loop)
 // ============================================================
 
-/**
- * Returns projects scoped to a specific owner, or all if not provided.
- */
 export function useUserProjects(ownerUserId?: string): Project[] {
   const projects = useSpendStore(s => s.projects);
   return useMemo(() => {
@@ -512,9 +707,6 @@ export function useUserProjects(ownerUserId?: string): Project[] {
   }, [projects, ownerUserId]);
 }
 
-/**
- * Returns active project. If not found or if list is empty, returns undefined.
- */
 export function useActiveProject(ownerUserId?: string): Project | undefined {
   const projects = useSpendStore(s => s.projects);
   const activeProjectId = useSpendStore(s => s.settings.activeProjectId);
@@ -535,6 +727,30 @@ export function useProjectExpenses(projectId?: string): ExpenseItem[] {
     if (!projectId) return [];
     return expenses.filter(e => e.projectId === projectId);
   }, [expenses, projectId]);
+}
+
+export function useProjectRevenues(projectId?: string): RevenueItem[] {
+  const revenues = useSpendStore(s => s.revenues);
+  return useMemo(() => {
+    if (!projectId) return [];
+    return revenues.filter(r => r.projectId === projectId);
+  }, [revenues, projectId]);
+}
+
+export function useProjectStakeholders(projectId?: string): Stakeholder[] {
+  const stakeholders = useSpendStore(s => s.stakeholders);
+  return useMemo(() => {
+    if (!projectId) return [];
+    return stakeholders.filter(s => s.projectId === projectId);
+  }, [stakeholders, projectId]);
+}
+
+export function useProjectFundingRounds(projectId?: string): FundingRound[] {
+  const fundingRounds = useSpendStore(s => s.fundingRounds);
+  return useMemo(() => {
+    if (!projectId) return [];
+    return fundingRounds.filter(f => f.projectId === projectId);
+  }, [fundingRounds, projectId]);
 }
 
 export function useProjectDebugSessions(projectId?: string): DebugSession[] {
@@ -559,4 +775,109 @@ export function useMonthlyBurn(projectId?: string): number {
     () => expenses.reduce((sum, e) => sum + normalizeToMonthly(e.amount, e.billingCycle), 0),
     [expenses]
   );
+}
+
+export function useMonthlyRevenue(projectId?: string): number {
+  const revenues = useProjectRevenues(projectId);
+  return useMemo(
+    () => revenues.reduce((sum, r) => sum + normalizeToMonthly(r.netAmount, r.billingCycle), 0),
+    [revenues]
+  );
+}
+
+export function useNetMonthlyBurn(projectId?: string) {
+  const grossBurn = useMonthlyBurn(projectId);
+  const monthlyRevenue = useMonthlyRevenue(projectId);
+  const activeProject = useActiveProject();
+
+  return useMemo(() => {
+    const netBurn = Math.max(0, grossBurn - monthlyRevenue);
+    const isDefaultAlive = monthlyRevenue >= grossBurn && grossBurn > 0;
+    const cashReserve = activeProject?.totalCashReserve ?? 0;
+
+    let runwayMonths = 999;
+    let runwayDays = 0;
+
+    if (isDefaultAlive) {
+      runwayMonths = 999;
+      runwayDays = 0;
+    } else if (netBurn > 0) {
+      const floatMonths = safeDiv(cashReserve, netBurn);
+      runwayMonths = Math.floor(floatMonths);
+      runwayDays = Math.round((floatMonths - runwayMonths) * 30);
+    }
+
+    return {
+      grossBurn,
+      monthlyRevenue,
+      netBurn,
+      isDefaultAlive,
+      runwayMonths,
+      runwayDays,
+      effectiveMonthlySavings: Math.min(grossBurn, monthlyRevenue),
+    };
+  }, [grossBurn, monthlyRevenue, activeProject?.totalCashReserve]);
+}
+
+export function useCapTableSummary(projectId?: string) {
+  const stakeholders = useProjectStakeholders(projectId);
+  const fundingRounds = useProjectFundingRounds(projectId);
+
+  return useMemo(() => {
+    const totalShares = stakeholders.reduce((sum, s) => sum + safeNum(s.sharesOwned), 0);
+    const totalInvestedAmount = stakeholders.reduce((sum, s) => sum + safeNum(s.totalInvestedAmount), 0);
+    const totalCapitalRaised = fundingRounds.reduce((sum, f) => sum + safeNum(f.amountRaised), 0) || totalInvestedAmount;
+
+    // Latest round valuation or implied valuation
+    const latestRound = [...fundingRounds].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    )[0];
+
+    const postMoneyValuation = latestRound
+      ? safeNum(latestRound.postMoneyValuation)
+      : totalShares > 0 && totalCapitalRaised > 0
+      ? totalCapitalRaised * 4 // reasonable default 25% dilution implied
+      : 1000000;
+
+    const pricePerShare = totalShares > 0 ? safeDiv(postMoneyValuation, totalShares) : 0;
+
+    // Equity breakdowns by role
+    const founderShares = stakeholders
+      .filter(s => s.role === 'founder')
+      .reduce((sum, s) => sum + safeNum(s.sharesOwned), 0);
+
+    const investorShares = stakeholders
+      .filter(s => s.role === 'angel_investor' || s.role === 'vc_fund')
+      .reduce((sum, s) => sum + safeNum(s.sharesOwned), 0);
+
+    const esopShares = stakeholders
+      .filter(s => s.role === 'esop_pool')
+      .reduce((sum, s) => sum + safeNum(s.sharesOwned), 0);
+
+    const advisorShares = stakeholders
+      .filter(s => s.role === 'advisor' || s.role === 'strategic_partner')
+      .reduce((sum, s) => sum + safeNum(s.sharesOwned), 0);
+
+    const founderPercent = totalShares > 0 ? (founderShares / totalShares) * 100 : 0;
+    const investorPercent = totalShares > 0 ? (investorShares / totalShares) * 100 : 0;
+    const esopPercent = totalShares > 0 ? (esopShares / totalShares) * 100 : 0;
+    const advisorPercent = totalShares > 0 ? (advisorShares / totalShares) * 100 : 0;
+
+    return {
+      totalShares,
+      totalCapitalRaised,
+      postMoneyValuation,
+      pricePerShare,
+      founderShares,
+      investorShares,
+      esopShares,
+      advisorShares,
+      founderPercent,
+      investorPercent,
+      esopPercent,
+      advisorPercent,
+      stakeholderCount: stakeholders.length,
+      fundingRoundCount: fundingRounds.length,
+    };
+  }, [stakeholders, fundingRounds]);
 }

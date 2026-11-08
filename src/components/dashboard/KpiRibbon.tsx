@@ -10,7 +10,9 @@ import {
 import {
   useActiveProject,
   useProjectExpenses,
+  useProjectRevenues,
   useProjectAudit,
+  useNetMonthlyBurn,
 } from '../../store/useSpendStore';
 import {
   formatCurrency,
@@ -31,20 +33,19 @@ export const KpiRibbon: React.FC = () => {
   const cashReserve = activeProject?.totalCashReserve ?? 0;
   const budgetCap = activeProject?.monthlyBudgetCap ?? 1000;
   const expectedUsers = activeProject?.expectedMonthlyUsers ?? 1;
-  const expectedRevenue = activeProject?.expectedMonthlyRevenue ?? 0;
+
+  const {
+    grossBurn,
+    monthlyRevenue,
+    netBurn,
+    isDefaultAlive,
+    runwayMonths,
+    runwayDays,
+  } = useNetMonthlyBurn(activeProject?.id);
 
   const metrics = useMemo(() => {
     // 1. Total spent to date (sum of raw expense amounts)
     const totalSpent = expenses.reduce((sum, e) => sum + safeNum(e.amount), 0);
-
-    // 2. Normalized monthly burn rate
-    const monthlyBurn = expenses.reduce(
-      (sum, e) => sum + normalizeToMonthly(e.amount, e.billingCycle),
-      0
-    );
-
-    // 3. Runway in months & days
-    const runway = calcRunway(cashReserve, monthlyBurn);
 
     // 4. Hidden Debugging Tax
     const debugExpenses = expenses.filter((e) => e.category === 'debugging_tech_debt');
@@ -52,12 +53,12 @@ export const KpiRibbon: React.FC = () => {
       (sum, e) => sum + normalizeToMonthly(e.amount, e.billingCycle),
       0
     );
-    const debugTaxPercent = safeDiv(debugTotal * 100, monthlyBurn, 0);
+    const debugTaxPercent = safeDiv(debugTotal * 100, grossBurn, 0);
 
     // 5. Unit Economics
-    const costPerUser = safeDiv(monthlyBurn, Math.max(expectedUsers, 1), 0);
-    const grossProfit = expectedRevenue - monthlyBurn;
-    const grossMarginPercent = safeDiv(grossProfit * 100, Math.max(expectedRevenue, 1), 0);
+    const costPerUser = safeDiv(grossBurn, Math.max(expectedUsers, 1), 0);
+    const grossProfit = monthlyRevenue - grossBurn;
+    const grossMarginPercent = safeDiv(grossProfit * 100, Math.max(monthlyRevenue, 1), 0);
 
     // 6. AI Optimization Potential
     const monthlySavings = auditReport
@@ -69,8 +70,6 @@ export const KpiRibbon: React.FC = () => {
 
     return {
       totalSpent,
-      monthlyBurn,
-      runway,
       debugTotal,
       debugTaxPercent,
       costPerUser,
@@ -78,20 +77,26 @@ export const KpiRibbon: React.FC = () => {
       monthlySavings,
       yearlySavings,
     };
-  }, [expenses, cashReserve, expectedUsers, expectedRevenue, auditReport]);
+  }, [expenses, grossBurn, monthlyRevenue, expectedUsers, auditReport]);
 
   // Determine runway urgency color
-  const runwayColorType =
-    metrics.runway.months >= 12
-      ? 'emerald'
-      : metrics.runway.months >= 6
-      ? 'amber'
-      : 'rose';
+  const runwayColorType = isDefaultAlive
+    ? 'emerald'
+    : runwayMonths >= 12
+    ? 'emerald'
+    : runwayMonths >= 6
+    ? 'amber'
+    : 'rose';
 
   // Burn comparison with budget cap
-  const burnRatio = safeDiv(metrics.monthlyBurn * 100, budgetCap, 0);
-  const burnColorType =
-    burnRatio <= 85 ? 'emerald' : burnRatio <= 100 ? 'amber' : 'rose';
+  const burnRatio = safeDiv(netBurn * 100, budgetCap, 0);
+  const burnColorType = isDefaultAlive
+    ? 'emerald'
+    : burnRatio <= 85
+    ? 'emerald'
+    : burnRatio <= 100
+    ? 'amber'
+    : 'rose';
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
@@ -105,41 +110,54 @@ export const KpiRibbon: React.FC = () => {
         tooltip="Cumulative total of all historical expenses and one-time setups recorded in this project."
       />
 
-      {/* 2. Normalized Monthly Burn */}
+      {/* 2. Normalized Net Monthly Burn */}
       <KpiCard
-        title="Monthly Burn"
-        value={`${formatCurrency(metrics.monthlyBurn, currency)}/mo`}
-        subvalue={`${burnRatio.toFixed(0)}% of ${formatCurrency(budgetCap, currency)} cap`}
+        title={isDefaultAlive ? 'Net Cashflow' : 'Net Monthly Burn'}
+        value={
+          isDefaultAlive
+            ? `+${formatCurrency(monthlyRevenue - grossBurn, currency)}/mo`
+            : `${formatCurrency(netBurn, currency)}/mo`
+        }
+        subvalue={
+          isDefaultAlive
+            ? `Inflows: +${formatCurrency(monthlyRevenue, currency)}/mo`
+            : `Gross: ${formatCurrency(grossBurn, currency)} | Inflows: +${formatCurrency(monthlyRevenue, currency)}`
+        }
         icon={<Flame size={16} />}
         color={burnColorType}
         trend={{
-          direction: burnRatio > 100 ? 'down' : 'up',
-          label: burnRatio > 100 ? 'Over budget cap' : 'Within budget',
+          direction: isDefaultAlive ? 'up' : burnRatio > 100 ? 'down' : 'up',
+          label: isDefaultAlive ? 'DEFAULT ALIVE' : burnRatio > 100 ? 'Over budget cap' : 'Within budget',
         }}
-        tooltip="Normalized monthly expenditure including monthly subscriptions, amortized annual items, and average usage fees."
+        tooltip="Net monthly cash burn = Total Monthly Expenses minus Recurring Monthly Revenue."
       />
 
       {/* 3. Runway Counter */}
       <KpiCard
         title="Runway Remaining"
         value={
-          metrics.runway.months > 60
-            ? '60+ mo'
-            : `${metrics.runway.months}m ${metrics.runway.days}d`
+          isDefaultAlive
+            ? '∞ Infinite'
+            : `${runwayMonths}m ${runwayDays}d`
         }
-        subvalue={`Cash reserve: ${formatCurrency(cashReserve, currency)}`}
+        subvalue={
+          isDefaultAlive
+            ? `Self-sustaining (${formatCurrency(cashReserve, currency)} in bank)`
+            : `Cash reserve: ${formatCurrency(cashReserve, currency)}`
+        }
         icon={<Hourglass size={16} />}
         color={runwayColorType}
         trend={{
-          direction: metrics.runway.months >= 12 ? 'up' : 'down',
-          label:
-            metrics.runway.months >= 12
-              ? 'Healthy runway'
-              : metrics.runway.months >= 6
-              ? 'Warning zone'
-              : 'Critical runway!',
+          direction: isDefaultAlive || runwayMonths >= 12 ? 'up' : 'down',
+          label: isDefaultAlive
+            ? 'DEFAULT ALIVE (PROFITABLE)'
+            : runwayMonths >= 12
+            ? 'Healthy runway'
+            : runwayMonths >= 6
+            ? 'Warning zone'
+            : 'Critical runway!',
         }}
-        tooltip="Calculated by cashReserve / monthlyBurn. Days are calculated using a 30-day standard month."
+        tooltip="Calculated by Cash Reserve / Net Monthly Burn. When recurring revenue exceeds burn, the project is Default Alive."
       />
 
       {/* 4. Hidden Debugging Tax */}
