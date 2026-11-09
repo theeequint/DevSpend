@@ -52,6 +52,9 @@ export const Navbar: React.FC = () => {
   const { currentUser, logout, shardSyncStatus } = useAuthStore();
   const userProjects = useUserProjects(currentUser?.id);
   const activeProject = useActiveProject(currentUser?.id);
+  const hasActiveProject = Boolean(
+    activeProject && userProjects.some((p) => p.id === activeProject.id)
+  );
 
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
@@ -209,28 +212,44 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Zone 2: Center Navigation Tabs (visible on lg:flex >= 1024px) */}
-          <nav className="hidden lg:flex items-center gap-1 lg:gap-1.5 min-w-0 overflow-x-auto no-scrollbar py-1 px-1 bg-zinc-900/90 border border-zinc-800/80 rounded-xl">
-            {navItems.map((item) => {
-              const isActive = activeView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveView(item.id)}
-                  className={`flex items-center gap-1.5 whitespace-nowrap shrink-0 px-2.5 lg:px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors cursor-pointer ${
-                    isActive
-                      ? 'bg-zinc-800 text-zinc-100 shadow-sm border border-zinc-700/60'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
-                  }`}
-                >
-                  <span className="w-4 h-4 shrink-0 flex items-center justify-center">
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+          {/* Zone 2: Center Navigation Tabs (Project-Gated) */}
+          {hasActiveProject ? (
+            <nav className="hidden lg:flex items-center gap-1 lg:gap-1.5 min-w-0 overflow-x-auto no-scrollbar py-1 px-1 bg-zinc-900/90 border border-zinc-800/80 rounded-xl">
+              {navItems.map((item) => {
+                const isActive = activeView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveView(item.id)}
+                    className={`flex items-center gap-1.5 whitespace-nowrap shrink-0 px-2.5 lg:px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors cursor-pointer ${
+                      isActive
+                        ? 'bg-zinc-800 text-zinc-100 shadow-sm border border-zinc-700/60'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                    }`}
+                  >
+                    <span className="w-4 h-4 shrink-0 flex items-center justify-center">
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          ) : (
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/60 border border-zinc-800/70 text-xs font-mono text-zinc-400">
+              <button
+                onClick={() => setActiveView('home')}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 text-zinc-200 font-medium font-sans hover:text-white transition-colors cursor-pointer"
+              >
+                <Home size={14} className="text-emerald-400" />
+                <span>Projects</span>
+              </button>
+              <span className="text-zinc-600">|</span>
+              <span className="text-[11px] text-zinc-500">
+                Select or create a project to unlock workspace
+              </span>
+            </div>
+          )}
 
           {/* Zone 3: Right Controls & Currency Dropdown */}
           <div className="shrink-0 flex items-center gap-1.5 lg:gap-2">
@@ -332,11 +351,18 @@ export const Navbar: React.FC = () => {
 
             {/* Quick Log Expense button */}
             <button
-              onClick={() => setAddExpenseModalOpen(true)}
-              className="btn-primary h-8 lg:h-9 px-2.5 text-xs font-medium shrink-0 flex items-center gap-1 cursor-pointer whitespace-nowrap"
-            >
-              <Plus size={13} className="shrink-0" />
-              <span className="hidden sm:inline">Add</span>
+              onClick={() => {
+              if (hasActiveProject) {
+                setAddExpenseModalOpen(true);
+              } else {
+                setCreateProjectModalOpen(true);
+              }
+            }}
+            className="btn-primary h-8 lg:h-9 px-2.5 text-xs font-medium shrink-0 flex items-center gap-1 cursor-pointer whitespace-nowrap"
+            title={hasActiveProject ? "Log New Expense" : "Create Project to Unlock Expense Logging"}
+          >
+            <Plus size={13} className="shrink-0" />
+            <span className="hidden sm:inline">{hasActiveProject ? 'Add' : 'New Project'}</span>
             </button>
 
             {/* User Profile Pill & Dropdown */}
@@ -438,7 +464,8 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Responsive Sub-Tier Navigation Bar for < 1024px (Tablets & Split-Screen) */}
-        <div className="hidden md:flex lg:hidden border-t border-zinc-800/80 px-3 sm:px-4 py-1.5 overflow-x-auto no-scrollbar bg-[#09090B]/98">
+        {hasActiveProject && (
+          <div className="hidden md:flex lg:hidden border-t border-zinc-800/80 px-3 sm:px-4 py-1.5 overflow-x-auto no-scrollbar bg-[#09090B]/98">
           <div className="flex items-center gap-1.5 min-w-0 mx-auto">
             {navItems.map((item) => {
               const isActive = activeView === item.id;
@@ -461,6 +488,7 @@ export const Navbar: React.FC = () => {
             })}
           </div>
         </div>
+      )}
       </header>
 
       {/* GitHub Sync Modal */}

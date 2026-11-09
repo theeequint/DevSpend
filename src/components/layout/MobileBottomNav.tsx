@@ -12,11 +12,18 @@ import {
   Sparkles,
   Layers,
 } from 'lucide-react';
-import { useSpendStore } from '../../store/useSpendStore';
+import { useSpendStore, useUserProjects, useActiveProject } from '../../store/useSpendStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { AppView } from '../../types';
 
 export const MobileBottomNav: React.FC = () => {
   const { activeView, setActiveView } = useSpendStore();
+  const { currentUser } = useAuthStore();
+  const userProjects = useUserProjects(currentUser?.id);
+  const activeProject = useActiveProject(currentUser?.id);
+  const hasActiveProject = Boolean(
+    activeProject && userProjects.some((p) => p.id === activeProject.id)
+  );
 
   const handleAiSimClick = () => {
     if (activeView === 'audit') {
@@ -30,7 +37,8 @@ export const MobileBottomNav: React.FC = () => {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#09090B]/92 backdrop-blur-xl border-t border-zinc-800/80 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_25px_rgba(0,0,0,0.5)]">
-      <div className="flex items-center justify-around h-16 px-1 max-w-lg mx-auto">
+      {hasActiveProject ? (
+        <div className="flex items-center justify-around h-16 px-1 max-w-lg mx-auto">
         {/* Tab 1: Home / Projects */}
         <button
           type="button"
@@ -137,6 +145,18 @@ export const MobileBottomNav: React.FC = () => {
           </span>
         </button>
       </div>
+      ) : (
+        <div className="flex items-center justify-center h-16 px-4 max-w-lg mx-auto">
+          <button
+            type="button"
+            onClick={() => setActiveView('home')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 text-emerald-400 font-bold text-xs border border-zinc-700/60 shadow-sm"
+          >
+            <FolderKanban size={18} />
+            <span>Projects Workspace</span>
+          </button>
+        </div>
+      )}
     </nav>
   );
 };
