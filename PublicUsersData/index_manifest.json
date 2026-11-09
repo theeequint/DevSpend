@@ -6,8 +6,8 @@
   "shards": [
     {
       "fileName": "users_shard_001.json",
-      "userCount": 2,
-      "updatedAt": "2026-11-08T16:29:17.030Z"
+      "userCount": 3,
+      "updatedAt": "2026-11-09T05:34:59.590Z"
     }
   ]
 }
