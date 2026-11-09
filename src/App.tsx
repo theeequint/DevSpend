@@ -107,7 +107,7 @@ export const AppContent: React.FC = () => {
       <Navbar />
 
       {/* Main Content Viewport */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28 md:pb-12">
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-12">
         {shouldRenderProjects ? (
           <WelcomeHomeView />
         ) : (

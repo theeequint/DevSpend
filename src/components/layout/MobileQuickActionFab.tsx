@@ -63,8 +63,15 @@ export const MobileQuickActionFab: React.FC = () => {
     }
   };
 
+  const bottomPositionClass = activeDebugTimer
+    ? 'bottom-[calc(8.5rem+env(safe-area-inset-bottom))]'
+    : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]';
+
   return (
-    <div ref={containerRef} className="md:hidden fixed right-4 bottom-20 z-40 select-none">
+    <div
+      ref={containerRef}
+      className={`fixed right-4 ${bottomPositionClass} z-40 select-none transition-all duration-200`}
+    >
       {/* Quick-action Popover Menu */}
       {isOpen && (
         <>

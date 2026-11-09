@@ -37,7 +37,7 @@ export const MobileBottomNav: React.FC = () => {
   const isAiSimActive = activeView === 'audit' || activeView === 'simulator';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-[#09090B]/95 backdrop-blur-xl border-t border-zinc-800/80 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_25px_rgba(0,0,0,0.5)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#09090B]/95 backdrop-blur-xl border-t border-zinc-800/80 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_25px_rgba(0,0,0,0.5)]">
       {hasActiveProject ? (
         <div className="flex items-center justify-around h-16 px-1 max-w-lg mx-auto">
           {/* Tab 1: Home / Projects */}

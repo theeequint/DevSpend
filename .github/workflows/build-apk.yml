@@ -38,7 +38,11 @@ jobs:
         run: npm run build
 
       - name: Add or Sync Android Platform
-        run: npx cap add android || npx cap sync android
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
 
       - name: Build Debug APK with Gradle
         run: |

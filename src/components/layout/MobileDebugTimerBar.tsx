@@ -27,7 +27,7 @@ export const MobileDebugTimerBar: React.FC = () => {
   const currentCost = (elapsedSeconds / 3600) * hourlyRate;
 
   return (
-    <div className="md:hidden fixed left-3 right-3 bottom-20 z-30 animate-in fade-in slide-in-from-bottom-2 duration-200">
+    <div className="fixed left-3 right-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-30 animate-in fade-in slide-in-from-bottom-2 duration-200">
       <div className="bg-[#121215]/95 backdrop-blur-xl border border-rose-500/40 rounded-2xl p-2.5 shadow-2xl flex items-center justify-between gap-2 shadow-rose-950/40">
         {/* Left: Pulsing Bug & Ticking Timer */}
         <div
