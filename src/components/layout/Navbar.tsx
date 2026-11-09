@@ -28,6 +28,13 @@ import DataExportDropdown from './DataExportDropdown';
 import GitHubSyncModal from './GitHubSyncModal';
 import AndroidApkDownloadButton from './AndroidApkDownloadButton';
 
+const CURRENCY_SYMBOLS: Record<Currency, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  INR: '₹',
+};
+
 export const Navbar: React.FC = () => {
   const {
     activeView,
@@ -74,38 +81,39 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-[#09090B]/95 backdrop-blur-md font-sans">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14 gap-3">
-          {/* Left: Brand + Project Switcher */}
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 w-full max-w-full border-b border-zinc-800/80 bg-[#09090B]/95 backdrop-blur-md font-sans overflow-visible">
+        <div className="max-w-[1920px] mx-auto px-3 sm:px-4 xl:px-6 flex items-center justify-between w-full min-w-0 h-14 gap-2 lg:gap-3 xl:gap-4">
+          {/* Zone 1: Left Brand / Logo + Project Switcher */}
+          <div className="flex items-center gap-2 lg:gap-2.5 shrink-0 min-w-0">
             {/* Logo */}
             <div
               onClick={() => setActiveView('home')}
               className="flex items-center gap-2 cursor-pointer group shrink-0"
               title="DevSpend Home"
             >
-              <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center font-bold text-xs text-white shadow-md shadow-emerald-950 font-mono">
+              <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center font-bold text-xs text-white shadow-md shadow-emerald-950 font-mono shrink-0">
                 DS
               </div>
-              <span className="font-bold text-sm tracking-tight text-zinc-100 group-hover:text-white font-sans hidden sm:inline">
+              <span className="font-bold text-sm tracking-tight text-zinc-100 group-hover:text-white font-sans whitespace-nowrap">
                 Dev<span className="text-emerald-400">Spend</span>
               </span>
             </div>
 
-            <div className="h-4 w-px bg-zinc-800 hidden sm:block" />
+            <div className="h-4 w-px bg-zinc-800 hidden md:block shrink-0" />
 
             {/* Project Switcher Dropdown */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <div className="relative">
                 <button
                   onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/60 text-xs font-medium text-zinc-200 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 h-8 lg:h-9 px-2 lg:px-2.5 rounded-lg bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/60 text-xs font-medium text-zinc-200 transition-colors cursor-pointer shrink-0"
+                  title="Switch Active Project Workspace"
                 >
                   <FolderOpen size={13} className="text-emerald-400 shrink-0" />
-                  <span className="truncate max-w-[130px] font-mono">
+                  <span className="truncate max-w-[85px] sm:max-w-[110px] xl:max-w-[130px] font-mono">
                     {activeProject?.name || (userProjects.length > 0 ? 'Select Project' : 'Zero Projects')}
                   </span>
-                  <ChevronDown size={12} className="text-zinc-500" />
+                  <ChevronDown size={11} className="text-zinc-500 shrink-0" />
                 </button>
 
                 {projectDropdownOpen && (
@@ -114,7 +122,7 @@ export const Navbar: React.FC = () => {
                       className="fixed inset-0 z-20"
                       onClick={() => setProjectDropdownOpen(false)}
                     />
-                    <div className="absolute left-0 mt-1.5 w-64 rounded-xl bg-[#121215] border border-zinc-700 shadow-2xl p-1.5 z-30 space-y-1 animate-in fade-in duration-150">
+                    <div className="absolute left-0 mt-1.5 w-64 rounded-xl bg-[#121215] border border-zinc-700 shadow-2xl p-1.5 z-50 space-y-1 animate-in fade-in duration-150">
                       <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
                         Workspaces ({userProjects.length})
                       </div>
@@ -139,102 +147,101 @@ export const Navbar: React.FC = () => {
                               }}
                               className="truncate flex-1 text-left cursor-pointer"
                             >
-                              <div className="font-semibold truncate">{p.name}</div>
-                              <div className="text-[10px] text-zinc-500 font-mono">
-                                {p.status.toUpperCase()} • {p.currency}
+                              <div className="truncate font-semibold">{p.name}</div>
+                              <div className="text-[10px] text-zinc-500 font-mono truncate">
+                                Rate: {p.currency} {p.hourlyDevRate}/hr
                               </div>
                             </button>
-                            {p.id === activeProject?.id && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                            )}
+                            <div className="flex items-center gap-1 pl-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setProjectDropdownOpen(false);
+                                  setEditProjectModal(true, p.id);
+                                }}
+                                className="p-1 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/60 rounded"
+                                title="Edit Project Settings"
+                              >
+                                <FolderEdit size={12} />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setProjectDropdownOpen(false);
+                                  setDeleteProjectModal(true, p.id);
+                                }}
+                                className="p-1 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded"
+                                title="Delete Project & Ledger"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
                           </div>
                         ))
                       )}
 
-                      <div className="pt-1 mt-1 border-t border-zinc-800 space-y-0.5">
+                      <div className="pt-1 border-t border-zinc-800">
                         <button
                           onClick={() => {
                             setProjectDropdownOpen(false);
                             setCreateProjectModalOpen(true);
                           }}
-                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-600/20 transition-colors cursor-pointer"
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors cursor-pointer"
                         >
-                          <Plus size={14} />
-                          <span>+ Create New Project</span>
+                          <Plus size={13} />
+                          <span>Create New Project</span>
                         </button>
-
-                        {activeProject && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setProjectDropdownOpen(false);
-                                setEditProjectModal(true, activeProject.id);
-                              }}
-                              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-                            >
-                              <FolderEdit size={13} className="text-cyan-400" />
-                              <span>Edit Project Details</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                setProjectDropdownOpen(false);
-                                setDeleteProjectModal(true, activeProject.id);
-                              }}
-                              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-600/20 transition-colors cursor-pointer"
-                            >
-                              <Trash2 size={13} />
-                              <span>Delete Current Project</span>
-                            </button>
-                          </>
-                        )}
                       </div>
                     </div>
                   </>
                 )}
               </div>
 
-              {/* Quick button to create new project */}
+              {/* Quick Project New Button (visible on 2xl only) */}
               <button
                 onClick={() => setCreateProjectModalOpen(true)}
+                className="hidden 2xl:flex items-center gap-1 h-8 px-2 rounded-lg bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer shrink-0"
                 title="Create New Project"
-                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
               >
-                <FolderPlus size={13} className="text-emerald-400" />
+                <FolderPlus size={13} className="text-emerald-400 shrink-0" />
                 <span>New</span>
               </button>
             </div>
           </div>
 
-          {/* Center: Navigation Bar Tabs */}
-          <nav className="hidden md:flex items-center gap-1 bg-zinc-900/90 border border-zinc-800/80 p-1 rounded-xl">
+          {/* Zone 2: Center Navigation Tabs (visible on lg:flex >= 1024px) */}
+          <nav className="hidden lg:flex items-center gap-1 lg:gap-1.5 min-w-0 overflow-x-auto no-scrollbar py-1 px-1 bg-zinc-900/90 border border-zinc-800/80 rounded-xl">
             {navItems.map((item) => {
               const isActive = activeView === item.id;
               return (
                 <button
                   key={item.id}
                   onClick={() => setActiveView(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 whitespace-nowrap shrink-0 px-2.5 lg:px-3 py-1.5 text-xs lg:text-sm font-medium rounded-lg transition-colors cursor-pointer ${
                     isActive
                       ? 'bg-zinc-800 text-zinc-100 shadow-sm border border-zinc-700/60'
                       : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
                   }`}
                 >
-                  {item.icon}
+                  <span className="w-4 h-4 shrink-0 flex items-center justify-center">
+                    {item.icon}
+                  </span>
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
 
-          {/* Right: Actions, Live Timer Pill, Currency, GitHub Sync, Data/Export, Theme Studio, User Pill */}
-          <div className="flex items-center gap-2">
+          {/* Zone 3: Right Controls & Currency Dropdown */}
+          <div className="shrink-0 flex items-center gap-1.5 lg:gap-2">
             {/* Live Debug Timer pill if active */}
             {activeDebugTimer && (
               <button
                 onClick={() => setActiveView('ledger')}
-                className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono animate-pulse hover:bg-rose-500/20 transition-colors cursor-pointer"
+                className="hidden 2xl:flex items-center gap-1.5 h-8 lg:h-9 px-2 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono animate-pulse hover:bg-rose-500/20 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+                title="Active Debugging Timer"
               >
-                <Bug size={12} className="text-rose-400" />
+                <Bug size={12} className="text-rose-400 shrink-0" />
                 <span>{formatDuration(elapsedSeconds)}</span>
                 <span className="font-bold text-rose-400">
                   ({formatCurrency(currentDebugCost, currency)})
@@ -243,15 +250,15 @@ export const Navbar: React.FC = () => {
             )}
 
             {/* Currency Switcher */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 onClick={() => setCurrencyDropdownOpen(!currencyDropdownOpen)}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-mono text-zinc-300 transition-colors cursor-pointer"
+                className="h-8 lg:h-9 px-2 lg:px-2.5 text-xs lg:text-sm whitespace-nowrap shrink-0 flex items-center gap-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-mono transition-colors cursor-pointer"
                 title="Change Display Currency"
               >
-                <DollarSign size={12} className="text-zinc-500" />
-                <span>{currency}</span>
-                <ChevronDown size={10} className="text-zinc-500" />
+                <DollarSign size={12} className="text-zinc-500 shrink-0" />
+                <span>{CURRENCY_SYMBOLS[currency]} {currency}</span>
+                <ChevronDown size={10} className="text-zinc-500 shrink-0" />
               </button>
 
               {currencyDropdownOpen && (
@@ -260,7 +267,7 @@ export const Navbar: React.FC = () => {
                     className="fixed inset-0 z-20"
                     onClick={() => setCurrencyDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 mt-1.5 w-32 rounded-xl bg-[#121215] border border-zinc-700 shadow-2xl p-1 z-30 space-y-0.5 animate-in fade-in duration-150 font-mono text-xs">
+                  <div className="absolute right-0 mt-1.5 w-36 rounded-xl bg-[#121215] border border-zinc-700 shadow-2xl p-1 z-50 space-y-0.5 animate-in fade-in duration-150 font-mono text-xs">
                     {(['USD', 'EUR', 'GBP', 'INR'] as Currency[]).map((c) => (
                       <button
                         key={c}
@@ -271,7 +278,7 @@ export const Navbar: React.FC = () => {
                             : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
                         }`}
                       >
-                        <span>{c}</span>
+                        <span>{CURRENCY_SYMBOLS[c]} {c}</span>
                         {currency === c && <span>✓</span>}
                       </button>
                     ))}
@@ -283,11 +290,11 @@ export const Navbar: React.FC = () => {
             {/* Quick Cmd+K Button */}
             <button
               onClick={() => setCommandPaletteOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+              className="h-8 lg:h-9 px-2 lg:px-2.5 flex items-center gap-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
               title="Open Command Palette (Cmd+K)"
             >
-              <Terminal size={12} />
-              <kbd className="hidden sm:inline font-mono text-[10px] bg-zinc-800 px-1.5 py-0.2 rounded border border-zinc-700">
+              <Terminal size={12} className="shrink-0" />
+              <kbd className="hidden 2xl:inline font-mono text-[10px] bg-zinc-800 px-1.5 py-0.2 rounded border border-zinc-700">
                 ⌘K
               </kbd>
             </button>
@@ -295,7 +302,7 @@ export const Navbar: React.FC = () => {
             {/* GitHub Shard Sync Status Pill (Clickable -> Opens Sync Modal) */}
             <button
               onClick={() => setGithubSyncModalOpen(true)}
-              className={`hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-mono transition-all cursor-pointer ${
+              className={`hidden xl:flex items-center gap-1.5 h-8 lg:h-9 px-2 lg:px-2.5 rounded-lg border text-xs font-mono transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 shardSyncStatus === 'syncing'
                   ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 animate-pulse'
                   : shardSyncStatus === 'synced'
@@ -304,8 +311,8 @@ export const Navbar: React.FC = () => {
               }`}
               title="GitHub Sharded Database (Max 200/file). Click to manage sync."
             >
-              <Database size={11} className={shardSyncStatus === 'syncing' ? 'animate-spin' : ''} />
-              <span>
+              <Database size={11} className={`shrink-0 ${shardSyncStatus === 'syncing' ? 'animate-spin' : ''}`} />
+              <span className="hidden 2xl:inline">
                 {shardSyncStatus === 'syncing'
                   ? 'SYNCING...'
                   : shardSyncStatus === 'synced'
@@ -326,34 +333,34 @@ export const Navbar: React.FC = () => {
             {/* Quick Log Expense button */}
             <button
               onClick={() => setAddExpenseModalOpen(true)}
-              className="btn-primary py-1 px-2.5 text-xs font-medium shrink-0 flex items-center gap-1 cursor-pointer"
+              className="btn-primary h-8 lg:h-9 px-2.5 text-xs font-medium shrink-0 flex items-center gap-1 cursor-pointer whitespace-nowrap"
             >
-              <Plus size={13} />
+              <Plus size={13} className="shrink-0" />
               <span className="hidden sm:inline">Add</span>
             </button>
 
             {/* User Profile Pill & Dropdown */}
-            <div className="relative pl-1">
+            <div className="relative shrink-0">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 p-1 pl-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 transition-all cursor-pointer"
+                className="h-8 lg:h-9 px-1.5 lg:px-2 flex items-center gap-1.5 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 transition-all cursor-pointer shrink-0 whitespace-nowrap"
                 title="User Account"
               >
                 {currentUser?.avatarUrl ? (
                   <img
                     src={currentUser.avatarUrl}
                     alt={currentUser.displayName}
-                    className="w-6 h-6 rounded-lg object-cover ring-1 ring-zinc-700"
+                    className="w-5 h-5 rounded-md object-cover ring-1 ring-zinc-700 shrink-0"
                   />
                 ) : (
-                  <div className="w-6 h-6 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-300 text-[11px] font-bold">
+                  <div className="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center text-zinc-300 text-[10px] font-bold shrink-0">
                     {currentUser?.displayName?.[0]?.toUpperCase() || 'U'}
                   </div>
                 )}
-                <span className="text-xs font-mono text-zinc-300 hidden md:inline max-w-[90px] truncate">
+                <span className="text-xs font-mono text-zinc-300 hidden 2xl:inline max-w-[80px] truncate">
                   {currentUser?.displayName || currentUser?.username}
                 </span>
-                <ChevronDown size={11} className="text-zinc-500" />
+                <ChevronDown size={10} className="text-zinc-500 shrink-0" />
               </button>
 
               {userDropdownOpen && (
@@ -362,7 +369,7 @@ export const Navbar: React.FC = () => {
                     className="fixed inset-0 z-20"
                     onClick={() => setUserDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 mt-1.5 w-56 rounded-xl bg-[#121215] border border-zinc-700 shadow-2xl p-2 z-30 space-y-1 animate-in fade-in duration-150 font-sans">
+                  <div className="absolute right-0 mt-1.5 w-56 rounded-xl bg-[#121215] border border-zinc-700 shadow-2xl p-2 z-50 space-y-1 animate-in fade-in duration-150 font-sans text-xs">
                     <div className="px-2 py-1.5 border-b border-zinc-800">
                       <p className="text-xs font-semibold text-zinc-200 truncate">
                         {currentUser?.displayName || currentUser?.username}
@@ -430,6 +437,30 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
+        {/* Responsive Sub-Tier Navigation Bar for < 1024px (Tablets & Split-Screen) */}
+        <div className="hidden md:flex lg:hidden border-t border-zinc-800/80 px-3 sm:px-4 py-1.5 overflow-x-auto no-scrollbar bg-[#09090B]/98">
+          <div className="flex items-center gap-1.5 min-w-0 mx-auto">
+            {navItems.map((item) => {
+              const isActive = activeView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveView(item.id)}
+                  className={`flex items-center gap-1.5 whitespace-nowrap shrink-0 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                    isActive
+                      ? 'bg-zinc-800 text-zinc-100 shadow-sm border border-zinc-700/60'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                  }`}
+                >
+                  <span className="w-3.5 h-3.5 shrink-0 flex items-center justify-center">
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </header>
 
       {/* GitHub Sync Modal */}

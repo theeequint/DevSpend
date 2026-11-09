@@ -110,12 +110,12 @@ export const DataExportDropdown: React.FC<DataExportDropdownProps> = ({ classNam
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs font-medium text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer shadow-sm"
+        className="h-8 lg:h-9 px-2 lg:px-2.5 flex items-center gap-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs font-medium text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer shadow-sm shrink-0 whitespace-nowrap"
         title="Data Portability, Backups & CSV Export"
       >
-        <Download size={13} className="text-cyan-400" />
-        <span className="hidden md:inline">Data / Export</span>
-        <ChevronDown size={11} className="text-zinc-500" />
+        <Download size={13} className="text-cyan-400 shrink-0" />
+        <span className="hidden xl:inline">Export</span>
+        <ChevronDown size={10} className="text-zinc-500 shrink-0" />
       </button>
 
       {isOpen && (
