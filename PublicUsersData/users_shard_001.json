@@ -2,7 +2,7 @@
   "shardId": "users_shard_001",
   "userCount": 3,
   "createdAt": "2026-01-01T00:00:00.000Z",
-  "updatedAt": "2026-11-09T06:12:33.316Z",
+  "updatedAt": "2026-11-09T16:40:46.702Z",
   "users": [
     {
       "id": "user_demo",
@@ -25,14 +25,14 @@
       "updatedAt": "2026-11-08T16:01:48.900Z"
     },
     {
-      "id": "user_7a14f78f-d7c7-41a0-8143-d3e4cea9408d",
-      "username": "sadhanadas",
-      "displayName": "sadhanadas",
+      "id": "user_90352394-8b14-4fe2-a986-c2860ebd704d",
+      "username": "tncomelo",
+      "displayName": "tncomelo",
       "authProvider": "password",
-      "passwordHash": "f236040323414d589fdb34999dbfee947b5bae25c5e8e67b27a56cf4738288fa",
-      "salt": "d4ef7546d2ddb79d78f96edab714652c",
-      "createdAt": "2026-11-09T06:12:31.996Z",
-      "updatedAt": "2026-11-09T06:12:31.997Z"
+      "passwordHash": "801cef5b6bf6afd717eeebd763d883b1f36cc7abc789926db262e88ae2605d02",
+      "salt": "4a3ea69f52f95afb4f9fae608336b85a",
+      "createdAt": "2026-11-09T16:40:34.796Z",
+      "updatedAt": "2026-11-09T16:40:34.800Z"
     }
   ]
 }
