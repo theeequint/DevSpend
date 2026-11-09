@@ -74,7 +74,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-[#09090B]/95 backdrop-blur-md font-sans">
+      <header className="sticky top-0 z-40 w-full border-b border-zinc-800/80 bg-[#09090B]/95 backdrop-blur-md font-sans pt-[env(safe-area-inset-top)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14 gap-3">
           {/* Left: Brand + Project Switcher */}
           <div className="flex items-center gap-3">
@@ -206,7 +206,7 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Center: Navigation Bar Tabs */}
-          <nav className="hidden md:flex items-center gap-1 bg-zinc-900/90 border border-zinc-800/80 p-1 rounded-xl">
+          <nav className="hidden">
             {navItems.map((item) => {
               const isActive = activeView === item.id;
               return (

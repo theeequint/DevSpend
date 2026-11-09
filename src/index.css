@@ -695,6 +695,12 @@ body,
   max-width: 100vw;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -738,8 +744,10 @@ input[type="range"]::-moz-range-thumb {
 .touch-press {
   transition: transform 0.12s ease;
 }
-.touch-press:active {
-  transform: scale(0.97);
+.touch-press:active,
+button:not(:disabled):active,
+.btn-primary:active {
+  transform: scale(0.98);
 }
 
 /* Scrollbar hide utility */

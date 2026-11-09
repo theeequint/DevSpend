@@ -1,0 +1,6 @@
+{
+  "appId": "com.insyquest.devspend",
+  "appName": "DevSpend",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
