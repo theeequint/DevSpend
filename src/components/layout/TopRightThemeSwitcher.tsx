@@ -154,7 +154,7 @@ export const TopRightThemeSwitcher: React.FC<TopRightThemeSwitcherProps> = ({
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/70 hover:border-zinc-600 text-xs font-medium text-zinc-200 transition-all shadow-sm active:scale-95 cursor-pointer"
+        className="group flex items-center gap-1.5 h-8 lg:h-9 px-2 lg:px-2.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/70 hover:border-zinc-600 text-xs font-medium text-zinc-200 transition-all shadow-sm active:scale-95 cursor-pointer shrink-0 whitespace-nowrap"
         title="Open 15-Theme Chameleon Studio (Shift+T)"
         style={{
           boxShadow: isOpen ? `0 0 14px ${activeTheme.colors.accentGlow}` : undefined,
@@ -185,12 +185,12 @@ export const TopRightThemeSwitcher: React.FC<TopRightThemeSwitcherProps> = ({
         </div>
 
         {/* Current Theme Name */}
-        <span className="font-semibold tracking-tight truncate max-w-[110px] hidden sm:inline text-zinc-100">
+        <span className="font-semibold tracking-tight truncate max-w-[100px] hidden 2xl:inline text-zinc-100">
           {activeTheme.name}
         </span>
 
         {/* Keyboard shortcut pill */}
-        <kbd className="hidden lg:inline font-mono text-[9px] px-1 py-0.5 rounded bg-zinc-800/90 text-zinc-400 border border-zinc-700/80">
+        <kbd className="hidden 2xl:inline font-mono text-[9px] px-1 py-0.5 rounded bg-zinc-800/90 text-zinc-400 border border-zinc-700/80">
           ⇧T
         </kbd>
       </button>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useSpendStore, useUserProjects } from './store/useSpendStore';
+import { useSpendStore, useUserProjects, useActiveProject } from './store/useSpendStore';
 import { useAuthStore } from './store/useAuthStore';
 import { AuthGuard } from './components/auth/AuthGuard';
 import Navbar from './components/layout/Navbar';
@@ -46,6 +46,27 @@ export const AppContent: React.FC = () => {
 
   const { currentUser } = useAuthStore();
   const userProjects = useUserProjects(currentUser?.id);
+  const activeProject = useActiveProject(currentUser?.id);
+  const activeProjectId = settings.activeProjectId;
+  const hasActiveProject = Boolean(
+    activeProject && userProjects.some((p) => p.id === activeProject.id)
+  );
+
+  // Guard 1: Reset activeProjectId if stale or doesn't match any user projects
+  useEffect(() => {
+    if (activeProjectId && !hasActiveProject) {
+      useSpendStore.setState((s) => ({
+        settings: { ...s.settings, activeProjectId: null },
+      }));
+    }
+  }, [activeProjectId, hasActiveProject]);
+
+  // Guard 2: Force activeView back to 'home' (Projects) if no project is active
+  useEffect(() => {
+    if (!hasActiveProject && activeView !== 'home') {
+      setActiveView('home');
+    }
+  }, [hasActiveProject, activeView, setActiveView]);
 
   // Sync dynamic theme on <html>
   useEffect(() => {
@@ -77,7 +98,7 @@ export const AppContent: React.FC = () => {
   }, [activeDebugTimer?.running, tickDebugTimer]);
 
   // If user has zero projects, route directly to zero-project onboarding / home view
-  const shouldRenderHome = activeView === 'home' || userProjects.length === 0;
+  const shouldRenderProjects = !hasActiveProject || activeView === 'home';
 
   return (
     <div className="min-h-screen flex flex-col bg-[#09090B] text-zinc-100 font-sans selection:bg-emerald-500/30 selection:text-emerald-200">
@@ -86,7 +107,7 @@ export const AppContent: React.FC = () => {
 
       {/* Main Content Viewport */}
       <main className="flex-1 max-w-[1600px] w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-28 md:pb-12">
-        {shouldRenderHome ? (
+        {shouldRenderProjects ? (
           <WelcomeHomeView />
         ) : (
           <>
@@ -130,8 +151,8 @@ export const AppContent: React.FC = () => {
 
       {/* High-density Minimalist Developer Footer */}
       {/* Mobile-Only Native Bottom Navigation, Quick FAB & Debug Island */}
-      <MobileDebugTimerBar />
-      <MobileQuickActionFab />
+      {hasActiveProject && <MobileDebugTimerBar />}
+      {hasActiveProject && <MobileQuickActionFab />}
       <MobileBottomNav />
 
       {/* High-density Minimalist Developer Footer (Desktop only) */}

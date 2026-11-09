@@ -84,7 +84,7 @@ interface DevSpendState {
   addProject: (project: Omit<Project, 'id' | 'createdAt'>) => string;
   updateProject: (id: string, updates: Partial<Project>) => void;
   deleteProject: (id: string) => void;
-  setActiveProject: (id: string) => void;
+  setActiveProject: (id: string | null) => void;
   setDeleteProjectModal: (open: boolean, projectId?: string | null) => void;
   setEditProjectModal: (open: boolean, projectId?: string | null) => void;
 
@@ -230,9 +230,7 @@ export const useSpendStore = create<DevSpendState>()(
       deleteProject: (id) => {
         const remainingProjects = get().projects.filter(p => p.id !== id);
         const currentActive = get().settings.activeProjectId;
-        const newActiveId = currentActive === id
-          ? (remainingProjects[0]?.id ?? '')
-          : currentActive;
+        const newActiveId = currentActive === id ? null : currentActive;
 
         set(s => ({
           projects: remainingProjects,
@@ -246,7 +244,7 @@ export const useSpendStore = create<DevSpendState>()(
             ...s.settings,
             activeProjectId: newActiveId,
           },
-          activeView: remainingProjects.length === 0 ? 'home' : s.activeView,
+          activeView: currentActive === id || remainingProjects.length === 0 ? 'home' : s.activeView,
           deleteProjectModalOpen: false,
           projectToDeleteId: null,
         }));
@@ -254,8 +252,8 @@ export const useSpendStore = create<DevSpendState>()(
 
       setActiveProject: (id) => {
         set(s => ({
-          settings: { ...s.settings, activeProjectId: id },
-          activeView: s.activeView === 'home' ? 'dashboard' : s.activeView,
+          settings: { ...s.settings, activeProjectId: id || null },
+          activeView: id ? (s.activeView === 'home' ? 'dashboard' : s.activeView) : 'home',
         }));
       },
 
@@ -728,9 +726,14 @@ export function useActiveProject(ownerUserId?: string): Project | undefined {
       ? projects.filter(p => p.ownerUserId === ownerUserId)
       : projects;
 
-    if (userScoped.length === 0) return undefined;
-    return userScoped.find(p => p.id === activeProjectId) ?? userScoped[0];
+    if (!activeProjectId) return undefined;
+    return userScoped.find(p => p.id === activeProjectId);
   }, [projects, activeProjectId, ownerUserId]);
+}
+
+export function useHasActiveProject(ownerUserId?: string): boolean {
+  const activeProject = useActiveProject(ownerUserId);
+  return Boolean(activeProject);
 }
 
 export function useProjectExpenses(projectId?: string): ExpenseItem[] {
