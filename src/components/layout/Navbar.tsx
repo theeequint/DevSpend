@@ -26,6 +26,7 @@ import { formatCurrency, formatDuration } from '../../utils/formatters';
 import TopRightThemeSwitcher from './TopRightThemeSwitcher';
 import DataExportDropdown from './DataExportDropdown';
 import GitHubSyncModal from './GitHubSyncModal';
+import AndroidApkDownloadButton from './AndroidApkDownloadButton';
 
 export const Navbar: React.FC = () => {
   const {
@@ -315,6 +316,9 @@ export const Navbar: React.FC = () => {
 
             {/* Data / Export Dropdown */}
             <DataExportDropdown />
+
+            {/* Android APK Download Button (Only visible on Android web browsers) */}
+            <AndroidApkDownloadButton />
 
             {/* Top-Right Interactive 15-Theme Studio Switcher */}
             <TopRightThemeSwitcher />

@@ -23,6 +23,7 @@ import {
 import { useAuthStore } from '../../store/useAuthStore';
 import { checkPasswordStrength } from '../../utils/security';
 import TopRightThemeSwitcher from '../layout/TopRightThemeSwitcher';
+import AndroidApkDownloadButton from '../layout/AndroidApkDownloadButton';
 
 export const AuthGateway: React.FC = () => {
   const {
@@ -87,8 +88,9 @@ export const AuthGateway: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#09090B] text-zinc-100 flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden font-sans">
-      {/* Pinned Top-Right Theme Studio Switcher */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Pinned Top-Right Theme Studio Switcher & Android APK Download */}
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <AndroidApkDownloadButton />
         <TopRightThemeSwitcher />
       </div>
       {/* Background ambient lighting */}
