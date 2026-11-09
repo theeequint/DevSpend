@@ -1,8 +1,8 @@
 {
   "shardId": "users_shard_001",
-  "userCount": 2,
+  "userCount": 3,
   "createdAt": "2026-01-01T00:00:00.000Z",
-  "updatedAt": "2026-11-08T16:01:49.032Z",
+  "updatedAt": "2026-11-09T06:12:33.316Z",
   "users": [
     {
       "id": "user_demo",
@@ -23,6 +23,16 @@
       "salt": "5f58d167e51845f2e6797d3545445876",
       "createdAt": "2026-11-08T16:01:48.900Z",
       "updatedAt": "2026-11-08T16:01:48.900Z"
+    },
+    {
+      "id": "user_7a14f78f-d7c7-41a0-8143-d3e4cea9408d",
+      "username": "sadhanadas",
+      "displayName": "sadhanadas",
+      "authProvider": "password",
+      "passwordHash": "f236040323414d589fdb34999dbfee947b5bae25c5e8e67b27a56cf4738288fa",
+      "salt": "d4ef7546d2ddb79d78f96edab714652c",
+      "createdAt": "2026-11-09T06:12:31.996Z",
+      "updatedAt": "2026-11-09T06:12:31.997Z"
     }
   ]
 }
