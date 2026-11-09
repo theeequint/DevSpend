@@ -25,6 +25,7 @@ import { applyThemeToDOM, DEFAULT_THEME_ID, ThemeId } from './config/themes';
 export const AppContent: React.FC = () => {
   const {
     activeView,
+    setActiveView,
     settings,
     activeDebugTimer,
     tickDebugTimer,
