@@ -63,10 +63,14 @@ export function formatCurrency(
     if (converted >= 1_000) return `${symbol}${(converted / 1_000).toFixed(1)}K`;
   }
 
-  return new Intl.NumberFormat('en-US', {
+  const isNeg = converted < 0;
+  const abs = Math.abs(converted);
+  const formatted = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(converted).replace(/^/, symbol);
+  }).format(abs);
+
+  return isNeg ? `-${symbol}${formatted}` : `${symbol}${formatted}`;
 }
 
 export function formatUSD(amount: number): string {

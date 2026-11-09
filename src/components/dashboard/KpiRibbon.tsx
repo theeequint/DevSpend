@@ -116,7 +116,7 @@ export const KpiRibbon: React.FC = () => {
         value={
           isDefaultAlive
             ? `+${formatCurrency(monthlyRevenue - grossBurn, currency)}/mo`
-            : `${formatCurrency(netBurn, currency)}/mo`
+            : `-${formatCurrency(netBurn, currency)}/mo`
         }
         subvalue={
           isDefaultAlive
