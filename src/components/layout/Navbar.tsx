@@ -85,7 +85,7 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-40 w-full max-w-full border-b border-zinc-800/80 bg-[#09090B]/95 backdrop-blur-md font-sans overflow-visible pt-[env(safe-area-inset-top)]">
-        <div className="max-w-[1920px] mx-auto px-3 sm:px-4 xl:px-6 flex items-center justify-between w-full min-w-0 h-14 gap-2 lg:gap-3 xl:gap-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 overflow-x-auto no-scrollbar whitespace-nowrap w-full max-w-[1920px] mx-auto h-14">
           {/* Zone 1: Left Brand / Logo + Project Switcher */}
           <div className="flex items-center gap-2 lg:gap-2.5 shrink-0 min-w-0">
             {/* Logo */}
@@ -215,7 +215,7 @@ export const Navbar: React.FC = () => {
 
           {/* Zone 2: Center Navigation Tabs (Project-Gated) */}
           {hasActiveProject ? (
-            <nav className="hidden lg:flex items-center gap-1 lg:gap-1.5 min-w-0 overflow-x-auto no-scrollbar py-1 px-1 bg-zinc-900/90 border border-zinc-800/80 rounded-xl">
+            <nav className="flex items-center gap-1 lg:gap-1.5 shrink-0 py-1 px-1 bg-zinc-900/90 border border-zinc-800/80 rounded-xl">
               {navItems.map((item) => {
                 const isActive = activeView === item.id;
                 return (
@@ -237,7 +237,7 @@ export const Navbar: React.FC = () => {
               })}
             </nav>
           ) : (
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/60 border border-zinc-800/70 text-xs font-mono text-zinc-400">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl shrink-0 bg-zinc-900/60 border border-zinc-800/70 text-xs font-mono text-zinc-400">
               <button
                 onClick={() => setActiveView('home')}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 text-zinc-200 font-medium font-sans hover:text-white transition-colors cursor-pointer"

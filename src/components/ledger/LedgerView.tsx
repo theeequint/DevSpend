@@ -257,7 +257,7 @@ export const LedgerView: React.FC = () => {
             </span>
           </div>
           <div className="mt-2">
-            <div className="text-lg font-bold font-mono text-zinc-200">
+            <div className="text-lg font-bold font-mono text-red-400 font-semibold">
               -{formatCurrency(grossBurn, currency)}
               <span className="text-[11px] font-normal text-zinc-500">/mo</span>
             </div>
@@ -277,7 +277,7 @@ export const LedgerView: React.FC = () => {
               className={`p-1 rounded ${
                 isDefaultAlive
                   ? 'bg-emerald-500/10 text-emerald-400'
-                  : 'bg-rose-500/10 text-rose-400'
+                  : 'bg-red-500/10 text-red-400'
               }`}
             >
               <Scale size={13} />
@@ -286,7 +286,7 @@ export const LedgerView: React.FC = () => {
           <div className="mt-2">
             <div
               className={`text-lg font-bold font-mono ${
-                isDefaultAlive ? 'text-emerald-400' : 'text-rose-400'
+                isDefaultAlive ? 'text-emerald-400 font-semibold' : 'text-red-400 font-semibold'
               }`}
             >
               {isDefaultAlive ? '+' : '-'}

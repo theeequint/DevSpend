@@ -217,8 +217,8 @@ export const WelcomeHomeView: React.FC = () => {
                     <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-zinc-950/70 border border-zinc-800/60 font-mono mb-4 text-center">
                       <div>
                         <span className="block text-[10px] text-zinc-500">Monthly Burn</span>
-                        <span className="text-xs font-bold text-zinc-200 tabular-nums">
-                          {formatCurrency(monthlyBurn, p.currency)}
+                        <span className="text-xs font-bold text-red-400 font-semibold tabular-nums">
+                          -{formatCurrency(monthlyBurn, p.currency)}
                         </span>
                       </div>
                       <div>

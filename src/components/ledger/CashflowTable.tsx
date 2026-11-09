@@ -523,7 +523,7 @@ export const CashflowTable: React.FC<CashflowTableProps> = ({
                         </div>
                         <div
                           className={`font-semibold ${
-                            isRev ? 'text-emerald-400/90' : 'text-zinc-400'
+                            isRev ? 'text-emerald-400 font-semibold' : 'text-red-400 font-semibold'
                           }`}
                         >
                           {isRev ? '+' : '-'}
@@ -535,7 +535,7 @@ export const CashflowTable: React.FC<CashflowTableProps> = ({
                       <td className="py-2.5 px-3 text-right whitespace-nowrap font-mono text-xs">
                         <span
                           className={`font-bold ${
-                            isRev ? 'text-emerald-400' : 'text-zinc-100'
+                            isRev ? 'text-emerald-400 font-semibold' : 'text-red-400 font-semibold'
                           }`}
                         >
                           {isRev ? '+' : '-'}

@@ -5,7 +5,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus, Info } from 'lucide-react';
 
-type KpiColor = 'default' | 'emerald' | 'amber' | 'rose' | 'violet' | 'cyan';
+type KpiColor = 'default' | 'emerald' | 'amber' | 'rose' | 'red' | 'violet' | 'cyan';
 
 interface TrendProps {
   direction: 'up' | 'down' | 'neutral';
@@ -27,7 +27,8 @@ const COLOR_MAP: Record<KpiColor, { accent: string; iconBg: string; border: stri
   default:  { accent: 'text-zinc-100',    iconBg: 'bg-zinc-700/50',       border: 'border-zinc-700/60' },
   emerald:  { accent: 'text-emerald-400', iconBg: 'bg-emerald-500/10',    border: 'border-emerald-500/20' },
   amber:    { accent: 'text-amber-400',   iconBg: 'bg-amber-500/10',      border: 'border-amber-500/20' },
-  rose:     { accent: 'text-rose-400',    iconBg: 'bg-rose-500/10',       border: 'border-rose-500/20' },
+  rose:     { accent: 'text-red-400 font-semibold',    iconBg: 'bg-red-500/10',       border: 'border-red-500/30' },
+  red:      { accent: 'text-red-400 font-semibold',    iconBg: 'bg-red-500/10',       border: 'border-red-500/30' },
   violet:   { accent: 'text-violet-400',  iconBg: 'bg-violet-500/10',     border: 'border-violet-500/20' },
   cyan:     { accent: 'text-cyan-400',    iconBg: 'bg-cyan-500/10',       border: 'border-cyan-500/20' },
 };
@@ -77,7 +78,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   tooltip,
   loading = false,
 }) => {
-  const { accent, iconBg, border } = COLOR_MAP[color];
+  const { accent, iconBg, border } = COLOR_MAP[color] || COLOR_MAP.default;
+  const isNegative = typeof value === 'string' && (value.startsWith('-') || /-[$\u20AC\u00A3\u20B9]/.test(value));
+  const finalAccent = isNegative ? 'text-red-400 font-semibold' : accent;
 
   return (
     <div
@@ -111,7 +114,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           <SkeletonPulse />
         ) : (
           <>
-            <p className={`num text-2xl font-bold leading-tight tracking-tight ${accent}`}>
+            <p className={`num text-2xl font-bold leading-tight tracking-tight ${finalAccent}`}>
               {value}
             </p>
             {subvalue && (
