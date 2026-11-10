@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - mobile-apk
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -22,9 +23,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
@@ -50,24 +48,25 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Rename APK Output
+      - name: Copy & Prepare APK
         run: |
-          mv android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/DevSpend.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk DevSpend.apk
 
       - name: Upload APK Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
           name: DevSpend-apk
-          path: android/app/build/outputs/apk/debug/DevSpend.apk
+          path: DevSpend.apk
           if-no-files-found: error
 
-      - name: Publish to GitHub Release
+      - name: Upload APK to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest-apk
-          name: "DevSpend Standalone Android APK"
+          name: "DevSpend Android App (Latest)"
           body: "Automated Android APK build generated from the mobile-apk branch."
-          files: android/app/build/outputs/apk/debug/DevSpend.apk
+          files: DevSpend.apk
           make_latest: true
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
