@@ -6,9 +6,9 @@
 import { ShardManifest, UserShardFile, StoredUserRecord, UserDataSnapshot } from '../types';
 import { isoNow } from '../utils/formatters';
 
-const GITHUB_OWNER = 'theeequint';
-const GITHUB_REPO = 'DevSpend';
-const GITHUB_BRANCH = 'main';
+const GITHUB_OWNER = import.meta.env.VITE_GITHUB_OWNER || '';
+const GITHUB_REPO = import.meta.env.VITE_GITHUB_REPO || '';
+const GITHUB_BRANCH = import.meta.env.VITE_GITHUB_BRANCH || 'main';
 const MANIFEST_PATH = 'PublicUsersData/index_manifest.json';
 export const MAX_USERS_PER_SHARD = 200;
 
@@ -55,12 +55,13 @@ const DEFAULT_SHARD_001: UserShardFile = {
  */
 export function getGitHubToken(): string {
   try {
+    const envToken = import.meta.env.VITE_GITHUB_TOKEN || '';
+    if (envToken) return envToken.trim();
     const stored = localStorage.getItem(GITHUB_PAT_KEY);
-    if (stored) return stored;
-    // Fallback to configured token
-    return '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';
+    if (stored) return stored.trim();
+    return '';
   } catch {
-    return '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';
+    return '';
   }
 }
 
@@ -82,8 +83,8 @@ export function setGitHubToken(token: string): void {
 export async function getShardManifest(): Promise<ShardManifest> {
   const timestamp = Date.now();
 
-  // Try 1: Remote GitHub Raw
-  try {
+  // Try 1: Remote GitHub Raw (if configured in environment)
+  if (GITHUB_OWNER && GITHUB_REPO) try {
     const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${MANIFEST_PATH}?t=${timestamp}`;
     const res = await fetch(rawUrl, { cache: 'no-cache' });
     if (res.ok) {
@@ -129,8 +130,8 @@ export async function getUserShard(fileName: string): Promise<UserShardFile> {
   const timestamp = Date.now();
   const cacheKey = `${SHARD_CACHE_PREFIX}${fileName}`;
 
-  // Try 1: Remote GitHub Raw
-  try {
+  // Try 1: Remote GitHub Raw (if configured in environment)
+  if (GITHUB_OWNER && GITHUB_REPO) try {
     const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/PublicUsersData/${fileName}?t=${timestamp}`;
     const res = await fetch(rawUrl, { cache: 'no-cache' });
     if (res.ok) {
@@ -303,7 +304,7 @@ export async function syncFileToGitHub(
   commitMessage: string
 ): Promise<boolean> {
   const token = getGitHubToken();
-  if (!token) return false;
+  if (!token || !GITHUB_OWNER || !GITHUB_REPO) return false;
 
   const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`;
 

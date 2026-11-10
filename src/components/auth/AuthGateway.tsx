@@ -105,7 +105,7 @@ export const AuthGateway: React.FC = () => {
             DevSpend Intelligence v2.1
           </span>
           <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-            {shardSyncStatus === 'synced' ? 'GitHub Shards Online' : 'Local Fallback'}
+            {shardSyncStatus === 'synced' ? 'Cloud Sync Online' : 'Local Storage Mode'}
           </span>
         </div>
         <h1 className="text-3xl font-extrabold tracking-tight text-zinc-100 mb-2">
@@ -365,11 +365,11 @@ export const AuthGateway: React.FC = () => {
             <span>
               {isSubmitting
                 ? mode === 'signin'
-                  ? 'Verifying with Shard Database...'
-                  : 'Registering & Appending Shard...'
+                  ? 'Verifying Credentials...'
+                  : 'Creating Workspace...'
                 : mode === 'signin'
                 ? 'Sign In with Password'
-                : 'Create Account & Commit to Shard'}
+                : 'Create Account & Workspace'}
             </span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </button>
@@ -407,10 +407,10 @@ export const AuthGateway: React.FC = () => {
       <div className="mt-8 text-center text-xs text-zinc-500 font-mono flex flex-col sm:flex-row items-center justify-center gap-2">
         <div className="flex items-center gap-1.5 text-emerald-400/90">
           <Database className="w-3.5 h-3.5" />
-          <span>GitHub-Backed Sharded DB (`PublicUsersData/`)</span>
+          <span>Zero-Knowledge Multi-Tenant Architecture</span>
         </div>
         <span className="hidden sm:inline">•</span>
-        <span>Max 200 Users/Shard</span>
+        <span>Client-Side Salt</span>
         <span className="hidden sm:inline">•</span>
         <div className="flex items-center gap-1">
           <Shield className="w-3 h-3 text-zinc-400" />

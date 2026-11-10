@@ -16,7 +16,6 @@ import {
   LogOut,
   Shield,
   Home,
-  Database,
   PieChart,
 } from 'lucide-react';
 import { useSpendStore, useActiveProject, useUserProjects } from '../../store/useSpendStore';
@@ -25,7 +24,6 @@ import { Currency, AppView } from '../../types';
 import { formatCurrency, formatDuration } from '../../utils/formatters';
 import TopRightThemeSwitcher from './TopRightThemeSwitcher';
 import DataExportDropdown from './DataExportDropdown';
-import GitHubSyncModal from './GitHubSyncModal';
 import AndroidApkDownloadButton from './AndroidApkDownloadButton';
 
 const CURRENCY_SYMBOLS: Record<Currency, string> = {
@@ -49,7 +47,7 @@ export const Navbar: React.FC = () => {
     updateProject,
   } = useSpendStore();
 
-  const { currentUser, logout, shardSyncStatus } = useAuthStore();
+  const { currentUser, logout } = useAuthStore();
   const userProjects = useUserProjects(currentUser?.id);
   const activeProject = useActiveProject(currentUser?.id);
   const hasActiveProject = Boolean(
@@ -59,7 +57,6 @@ export const Navbar: React.FC = () => {
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
   const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [githubSyncModalOpen, setGithubSyncModalOpen] = useState(false);
 
   const currency = activeProject?.currency ?? 'USD';
   const hourlyRate = activeProject?.hourlyDevRate ?? 60;
@@ -318,28 +315,6 @@ export const Navbar: React.FC = () => {
               </kbd>
             </button>
 
-            {/* GitHub Shard Sync Status Pill (Clickable -> Opens Sync Modal) */}
-            <button
-              onClick={() => setGithubSyncModalOpen(true)}
-              className={`hidden xl:flex items-center gap-1.5 h-8 lg:h-9 px-2 lg:px-2.5 rounded-lg border text-xs font-mono transition-all cursor-pointer shrink-0 whitespace-nowrap ${
-                shardSyncStatus === 'syncing'
-                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 animate-pulse'
-                  : shardSyncStatus === 'synced'
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20'
-                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-              }`}
-              title="GitHub Sharded Database (Max 200/file). Click to manage sync."
-            >
-              <Database size={11} className={`shrink-0 ${shardSyncStatus === 'syncing' ? 'animate-spin' : ''}`} />
-              <span className="hidden 2xl:inline">
-                {shardSyncStatus === 'syncing'
-                  ? 'SYNCING...'
-                  : shardSyncStatus === 'synced'
-                  ? 'SHARDS: SYNCED'
-                  : 'SHARDS: LOCAL'}
-              </span>
-            </button>
-
             {/* Data / Export Dropdown */}
             <DataExportDropdown />
 
@@ -433,17 +408,6 @@ export const Navbar: React.FC = () => {
                       </button>
                     )}
 
-                    <button
-                      onClick={() => {
-                        setUserDropdownOpen(false);
-                        setGithubSyncModalOpen(true);
-                      }}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800 transition-colors text-left cursor-pointer"
-                    >
-                      <Database size={13} className="text-emerald-400" />
-                      <span>GitHub Database Sync</span>
-                    </button>
-
                     <div className="pt-1 border-t border-zinc-800">
                       <button
                         onClick={() => {
@@ -492,11 +456,7 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* GitHub Sync Modal */}
-      <GitHubSyncModal
-        open={githubSyncModalOpen}
-        onClose={() => setGithubSyncModalOpen(false)}
-      />
-    </>
+      </>
   );
 };
 
