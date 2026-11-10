@@ -71,10 +71,10 @@ export const GitHubSyncModal: React.FC<GitHubSyncModalProps> = ({ open, onClose 
             </span>
             <div>
               <h3 className="text-sm font-bold text-zinc-100">
-                GitHub Sharded Database Pipeline
+                Cloud Data Storage Pipeline
               </h3>
               <p className="text-[11px] text-zinc-400">
-                Multi-tenant storage partitioned at 200 users per shard file.
+                Encrypted multi-tenant workspace data partition.
               </p>
             </div>
           </div>
@@ -133,7 +133,7 @@ export const GitHubSyncModal: React.FC<GitHubSyncModalProps> = ({ open, onClose 
                 Repository
               </span>
               <span className="text-xs font-bold text-zinc-300 block mt-1 truncate">
-                theeequint/DevSpend
+                Cloud Data Storage
               </span>
             </div>
           </div>
@@ -170,7 +170,7 @@ export const GitHubSyncModal: React.FC<GitHubSyncModalProps> = ({ open, onClose 
                   type={showToken ? 'text' : 'password'}
                   value={githubToken}
                   onChange={(e) => setGithubTokenState(e.target.value)}
-                  placeholder="ghp_..."
+                  placeholder="Enter access token..."
                   className="input pr-10 text-xs font-mono"
                 />
                 <button
@@ -200,7 +200,7 @@ export const GitHubSyncModal: React.FC<GitHubSyncModalProps> = ({ open, onClose 
               </button>
             </div>
             <p className="text-[10px] text-zinc-500 leading-normal">
-              Allows the application to push updated user shards into <code className="text-zinc-400">PublicUsersData/</code> directly.
+              Allows the application to synchronize workspace records securely.
             </p>
           </form>
         </div>
