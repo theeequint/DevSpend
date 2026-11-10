@@ -24,7 +24,7 @@ export const AndroidApkDownloadButton: React.FC = () => {
 
   return (
     <a
-      href="https://github.com/theeequint/DevSpend/releases/latest/download/DevSpend.apk"
+      href="https://github.com/theeequint/DevSpend/releases/download/latest-apk/DevSpend.apk"
       download="DevSpend.apk"
       target="_blank"
       rel="noopener noreferrer"
