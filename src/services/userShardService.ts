@@ -6,9 +6,9 @@
 import { ShardManifest, UserShardFile, StoredUserRecord, UserDataSnapshot } from '../types';
 import { isoNow } from '../utils/formatters';
 
-const GITHUB_OWNER = import.meta.env.VITE_GITHUB_OWNER || '';
-const GITHUB_REPO = import.meta.env.VITE_GITHUB_REPO || '';
-const GITHUB_BRANCH = import.meta.env.VITE_GITHUB_BRANCH || 'main';
+const GITHUB_OWNER = (import.meta.env.VITE_GITHUB_OWNER || 'theeequint').trim();
+const GITHUB_REPO = (import.meta.env.VITE_GITHUB_REPO || 'DevSpend').trim();
+const GITHUB_BRANCH = (import.meta.env.VITE_GITHUB_BRANCH || 'main').trim();
 const MANIFEST_PATH = 'PublicUsersData/index_manifest.json';
 export const MAX_USERS_PER_SHARD = 200;
 
@@ -55,8 +55,11 @@ const DEFAULT_SHARD_001: UserShardFile = {
  */
 export function getGitHubToken(): string {
   try {
-    const envToken = import.meta.env.VITE_GITHUB_TOKEN || '';
-    if (envToken) return envToken.trim();
+    const envToken =
+      import.meta.env.VITE_GITHUB_PAT ||
+      import.meta.env.VITE_GITHUB_TOKEN ||
+      '';
+    if (envToken && typeof envToken === 'string') return envToken.trim();
     const stored = localStorage.getItem(GITHUB_PAT_KEY);
     if (stored) return stored.trim();
     return '';
@@ -74,8 +77,25 @@ export function setGitHubToken(token: string): void {
 }
 
 /**
+ * UTF-8 safe Base64 encoder handling special characters & currency symbols (₹, $, €, etc.)
+ */
+export function encodeUtf8Base64(str: string): string {
+  try {
+    return btoa(unescape(encodeURIComponent(str)));
+  } catch {
+    const bytes = new TextEncoder().encode(str);
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+}
+
+/**
  * Fetch Shard Manifest with fallbacks:
- * 1. Remote GitHub raw / contents
+ * 1. Remote GitHub raw / contents (cache: 'no-store')
  * 2. Static /PublicUsersData/ relative endpoint
  * 3. LocalStorage cached manifest
  * 4. Default in-memory manifest
@@ -83,23 +103,25 @@ export function setGitHubToken(token: string): void {
 export async function getShardManifest(): Promise<ShardManifest> {
   const timestamp = Date.now();
 
-  // Try 1: Remote GitHub Raw (if configured in environment)
-  if (GITHUB_OWNER && GITHUB_REPO) try {
-    const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${MANIFEST_PATH}?t=${timestamp}`;
-    const res = await fetch(rawUrl, { cache: 'no-cache' });
-    if (res.ok) {
-      const manifest: ShardManifest = await res.json();
-      localStorage.setItem(MANIFEST_CACHE_KEY, JSON.stringify(manifest));
-      return manifest;
+  // Try 1: Remote GitHub Raw
+  if (GITHUB_OWNER && GITHUB_REPO) {
+    try {
+      const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${MANIFEST_PATH}?t=${timestamp}`;
+      const res = await fetch(rawUrl, { cache: 'no-store' });
+      if (res.ok) {
+        const manifest: ShardManifest = await res.json();
+        localStorage.setItem(MANIFEST_CACHE_KEY, JSON.stringify(manifest));
+        return manifest;
+      }
+    } catch {
+      // Network / offline
     }
-  } catch {
-    // Network / offline
   }
 
   // Try 2: Relative public static asset
   try {
     const localUrl = `/PublicUsersData/index_manifest.json?t=${timestamp}`;
-    const res = await fetch(localUrl, { cache: 'no-cache' });
+    const res = await fetch(localUrl, { cache: 'no-store' });
     if (res.ok) {
       const manifest: ShardManifest = await res.json();
       localStorage.setItem(MANIFEST_CACHE_KEY, JSON.stringify(manifest));
@@ -130,23 +152,25 @@ export async function getUserShard(fileName: string): Promise<UserShardFile> {
   const timestamp = Date.now();
   const cacheKey = `${SHARD_CACHE_PREFIX}${fileName}`;
 
-  // Try 1: Remote GitHub Raw (if configured in environment)
-  if (GITHUB_OWNER && GITHUB_REPO) try {
-    const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/PublicUsersData/${fileName}?t=${timestamp}`;
-    const res = await fetch(rawUrl, { cache: 'no-cache' });
-    if (res.ok) {
-      const shard: UserShardFile = await res.json();
-      localStorage.setItem(cacheKey, JSON.stringify(shard));
-      return shard;
+  // Try 1: Remote GitHub Raw
+  if (GITHUB_OWNER && GITHUB_REPO) {
+    try {
+      const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/PublicUsersData/${fileName}?t=${timestamp}`;
+      const res = await fetch(rawUrl, { cache: 'no-store' });
+      if (res.ok) {
+        const shard: UserShardFile = await res.json();
+        localStorage.setItem(cacheKey, JSON.stringify(shard));
+        return shard;
+      }
+    } catch {
+      // Network / offline
     }
-  } catch {
-    // Network / offline
   }
 
   // Try 2: Relative static asset
   try {
     const localUrl = `/PublicUsersData/${fileName}?t=${timestamp}`;
-    const res = await fetch(localUrl, { cache: 'no-cache' });
+    const res = await fetch(localUrl, { cache: 'no-store' });
     if (res.ok) {
       const shard: UserShardFile = await res.json();
       localStorage.setItem(cacheKey, JSON.stringify(shard));
@@ -280,23 +304,24 @@ export async function appendUserToShards(
   }
 
   // 6. Commit to GitHub Repository via REST API in background
-  syncFileToGitHub(
-    `PublicUsersData/${activeFileName}`,
-    JSON.stringify(activeShard, null, 2),
-    `chore(auth): append user @${newUser.username} to ${activeFileName}`
-  ).catch((err) => console.warn('GitHub shard sync warning:', err));
-
-  syncFileToGitHub(
-    MANIFEST_PATH,
-    JSON.stringify(manifest, null, 2),
-    `chore(auth): update manifest for @${newUser.username} (${manifest.totalRegisteredUsers} users)`
-  ).catch((err) => console.warn('GitHub manifest sync warning:', err));
+  await Promise.allSettled([
+    syncFileToGitHub(
+      `PublicUsersData/${activeFileName}`,
+      JSON.stringify(activeShard, null, 2),
+      `chore(auth): append user @${newUser.username} to ${activeFileName}`
+    ),
+    syncFileToGitHub(
+      MANIFEST_PATH,
+      JSON.stringify(manifest, null, 2),
+      `chore(auth): update manifest for @${newUser.username} (${manifest.totalRegisteredUsers} users)`
+    ),
+  ]);
 
   return { manifest, shard: activeShard };
 }
 
 /**
- * Commit a file to GitHub repository via REST API
+ * Commit a file to GitHub repository via REST API with SHA resolution and 409 conflict handling
  */
 export async function syncFileToGitHub(
   filePath: string,
@@ -304,33 +329,42 @@ export async function syncFileToGitHub(
   commitMessage: string
 ): Promise<boolean> {
   const token = getGitHubToken();
-  if (!token || !GITHUB_OWNER || !GITHUB_REPO) return false;
+  if (!token || !GITHUB_OWNER || !GITHUB_REPO) {
+    console.warn(`[Sync] Skipped sync for ${filePath}: missing token or repo configuration.`);
+    return false;
+  }
 
   const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`;
 
+  // Helper to fetch current file sha with cache: 'no-store'
+  const fetchCurrentSha = async (): Promise<string | undefined> => {
+    try {
+      const getRes = await fetch(`${url}?ref=${encodeURIComponent(GITHUB_BRANCH)}&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          Authorization: `token ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+        },
+      });
+      if (getRes.ok) {
+        const data = await getRes.json();
+        return data.sha;
+      }
+    } catch (err) {
+      console.warn(`[Sync] Error checking SHA for ${filePath}:`, err);
+    }
+    return undefined;
+  };
+
   try {
     // 1. Get current SHA if file exists
-    let sha: string | undefined = undefined;
-    const getRes = await fetch(url, {
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: 'application/vnd.github.v3+json',
-      },
-    });
+    let sha = await fetchCurrentSha();
 
-    if (getRes.ok) {
-      const data = await getRes.json();
-      sha = data.sha;
-    }
-
-    // 2. Base64 encode file content
-    const utf8Bytes = new TextEncoder().encode(content);
-    let binary = '';
-    utf8Bytes.forEach((b) => (binary += String.fromCharCode(b)));
-    const base64Content = btoa(binary);
+    // 2. Base64 encode file content with UTF-8 safe handling
+    const base64Content = encodeUtf8Base64(content);
 
     // 3. Put / Update content
-    const putRes = await fetch(url, {
+    let putRes = await fetch(url, {
       method: 'PUT',
       headers: {
         Authorization: `token ${token}`,
@@ -345,9 +379,35 @@ export async function syncFileToGitHub(
       }),
     });
 
-    return putRes.ok;
+    // 4. SHA conflict resolution (409 Conflict): retry once with fresh SHA
+    if (putRes.status === 409) {
+      console.warn(`[Sync] 409 Conflict on ${filePath}, re-fetching SHA and retrying...`);
+      const retrySha = await fetchCurrentSha();
+      putRes = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          Authorization: `token ${token}`,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: commitMessage,
+          content: base64Content,
+          branch: GITHUB_BRANCH,
+          sha: retrySha,
+        }),
+      });
+    }
+
+    if (!putRes.ok) {
+      const errText = await putRes.text();
+      console.warn(`[Sync] GitHub API error ${putRes.status} for ${filePath}:`, errText);
+      return false;
+    }
+
+    return true;
   } catch (err) {
-    console.warn(`Failed to sync ${filePath} to GitHub:`, err);
+    console.warn(`[Sync] Failed to sync ${filePath} to GitHub:`, err);
     return false;
   }
 }
@@ -376,18 +436,18 @@ export async function syncUserDataSnapshot(
           JSON.stringify(shard)
         );
 
-        // Commit to GitHub in background
-        syncFileToGitHub(
+        // Commit to GitHub via REST API
+        const synced = await syncFileToGitHub(
           `PublicUsersData/${s.fileName}`,
           JSON.stringify(shard, null, 2),
           `chore(sync): update user snapshot for ${shard.users[userIndex].username}`
-        ).catch(() => {});
+        );
 
-        return true;
+        return synced;
       }
     }
-  } catch {
-    // Offline or fallback
+  } catch (err) {
+    console.warn('[Sync] Failed to sync user snapshot:', err);
   }
   return false;
 }

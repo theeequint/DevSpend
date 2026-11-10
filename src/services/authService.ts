@@ -7,6 +7,7 @@ import {
   User,
   StoredUserRecord,
   AuthSession,
+  UserDataSnapshot,
 } from '../types';
 import {
   hashPassword,
@@ -64,8 +65,9 @@ export function validateUsername(username: string): { valid: boolean; error?: st
 export async function registerWithCredentials(
   rawUsername: string,
   rawPassword: string,
-  rawConfirmPassword?: string
-): Promise<{ user: User; session: AuthSession }> {
+  rawConfirmPassword?: string,
+  initialSnapshot?: UserDataSnapshot
+): Promise<{ user: User; session: AuthSession; userDataSnapshot?: UserDataSnapshot }> {
   const username = sanitizeInput(rawUsername).toLowerCase();
 
   // 1. Username validation
@@ -98,13 +100,18 @@ export async function registerWithCredentials(
     salt,
     createdAt: isoNow(),
     updatedAt: isoNow(),
+    userDataSnapshot: initialSnapshot,
   };
 
   // 5. Append to GitHub-backed PublicUsersData shards (max 200 users per file)
   await appendUserToShards(newUserRecord);
 
   // 6. Generate cryptographically signed HMAC-SHA256 session
-  return await issueSession(newUserRecord);
+  const sessionRes = await issueSession(newUserRecord);
+  return {
+    ...sessionRes,
+    userDataSnapshot: initialSnapshot,
+  };
 }
 
 /**
@@ -114,7 +121,7 @@ export async function registerWithCredentials(
 export async function loginWithCredentials(
   identifier: string,
   rawPassword: string
-): Promise<{ user: User; session: AuthSession }> {
+): Promise<{ user: User; session: AuthSession; userDataSnapshot?: UserDataSnapshot }> {
   const normId = sanitizeInput(identifier).toLowerCase();
 
   // 1. Check brute-force lockout
@@ -157,14 +164,22 @@ export async function loginWithCredentials(
   resetFailedLogins(normId);
 
   // 5. Issue HMAC-SHA256 signed session token
-  return await issueSession(userRecord);
+  const sessionRes = await issueSession(userRecord);
+  return {
+    ...sessionRes,
+    userDataSnapshot: userRecord.userDataSnapshot,
+  };
 }
 
 /**
  * Sign in as Pre-Populated Demo Account
  */
-export async function loginWithDemo(): Promise<{ user: User; session: AuthSession }> {
-  return await issueSession(SEED_DEMO_USER);
+export async function loginWithDemo(): Promise<{ user: User; session: AuthSession; userDataSnapshot?: UserDataSnapshot }> {
+  const sessionRes = await issueSession(SEED_DEMO_USER);
+  return {
+    ...sessionRes,
+    userDataSnapshot: SEED_DEMO_USER.userDataSnapshot,
+  };
 }
 
 /**

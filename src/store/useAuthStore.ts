@@ -4,7 +4,7 @@
 // ============================================================
 
 import { create } from 'zustand';
-import { User, AuthSession } from '../types';
+import { User, AuthSession, UserDataSnapshot } from '../types';
 import {
   registerWithCredentials,
   loginWithCredentials,
@@ -13,6 +13,8 @@ import {
   terminateSession,
 } from '../services/authService';
 import { getShardManifest } from '../services/userShardService';
+import { useSpendStore } from './useSpendStore';
+import { initCloudSyncListener } from '../services/cloudSyncService';
 
 interface AuthState {
   currentUser: User | null;
@@ -46,6 +48,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initAuth: async () => {
     try {
       set({ isInitializing: true, authError: null });
+      initCloudSyncListener();
+
       // Fetch latest shard manifest in background
       getShardManifest()
         .then(() => set({ shardSyncStatus: 'synced' }))
@@ -89,7 +93,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (identifier, password) => {
     try {
       set({ authError: null, shardSyncStatus: 'syncing' });
-      const { user, session } = await loginWithCredentials(identifier, password);
+      const { user, session, userDataSnapshot } = await loginWithCredentials(identifier, password);
+
+      // Hydrate user workspace data from snapshot if available
+      if (
+        userDataSnapshot &&
+        Array.isArray(userDataSnapshot.projects) &&
+        userDataSnapshot.projects.length > 0
+      ) {
+        try {
+          useSpendStore.getState().importFullState({
+            projects: userDataSnapshot.projects,
+            expenses: userDataSnapshot.expenses || [],
+            revenues: userDataSnapshot.revenues || [],
+            stakeholders: userDataSnapshot.stakeholders || [],
+            fundingRounds: userDataSnapshot.fundingRounds || [],
+          });
+        } catch (err) {
+          console.warn('[Auth] Workspace hydration notice:', err);
+        }
+      }
+
       set({
         currentUser: user,
         session,
@@ -98,6 +122,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         lockoutSeconds: 0,
         shardSyncStatus: 'synced',
       });
+      initCloudSyncListener();
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Login failed. Please check credentials.';
@@ -115,11 +140,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   register: async (username, password, confirmPassword) => {
     try {
       set({ authError: null, shardSyncStatus: 'syncing' });
+
+      // Capture current workspace snapshot for the new account
+      const currentSpend = useSpendStore.getState();
+      const initialSnapshot: UserDataSnapshot = {
+        projects: currentSpend.projects,
+        expenses: currentSpend.expenses,
+        revenues: currentSpend.revenues,
+        stakeholders: currentSpend.stakeholders,
+        fundingRounds: currentSpend.fundingRounds,
+        lastSyncedAt: new Date().toISOString(),
+      };
+
       const { user, session } = await registerWithCredentials(
         username,
         password,
-        confirmPassword
+        confirmPassword,
+        initialSnapshot
       );
+
       set({
         currentUser: user,
         session,
@@ -127,6 +166,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         authError: null,
         shardSyncStatus: 'synced',
       });
+      initCloudSyncListener();
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Registration failed.';
