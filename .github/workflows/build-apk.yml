@@ -33,6 +33,12 @@ jobs:
         run: npm install
 
       - name: Compile Web Application
+        env:
+          VITE_GITHUB_PAT: ${{ secrets.VITE_GITHUB_PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          VITE_GITHUB_OWNER: ${{ vars.VITE_GITHUB_OWNER || 'theeequint' }}
+          VITE_GITHUB_REPO: ${{ vars.VITE_GITHUB_REPO || 'DevSpend' }}
+          VITE_GITHUB_BRANCH: ${{ vars.VITE_GITHUB_BRANCH || 'main' }}
         run: npm run build
 
       - name: Add or Sync Android Platform
