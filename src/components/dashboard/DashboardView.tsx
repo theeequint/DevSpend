@@ -26,6 +26,7 @@ import BurnAreaChart from '../charts/BurnAreaChart';
 import CategoryDonut from '../charts/CategoryDonut';
 import StatusBadge from '../ui/StatusBadge';
 import CategoryBadge from '../ui/CategoryBadge';
+import ExportExcelButton from '../ui/ExportExcelButton';
 
 export const DashboardView: React.FC = () => {
   const activeProject = useActiveProject();
@@ -88,6 +89,7 @@ export const DashboardView: React.FC = () => {
 
         {/* Quick Action Buttons */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <ExportExcelButton />
           <button
             onClick={() => setCreateProjectModalOpen(true)}
             className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/80 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors"

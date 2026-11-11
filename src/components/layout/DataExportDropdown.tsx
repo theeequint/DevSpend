@@ -11,8 +11,10 @@ import {
   FileSpreadsheet,
   FileJson,
   ChevronDown,
+  Loader2,
 } from 'lucide-react';
-import { useSpendStore, useActiveProject, useProjectExpenses } from '../../store/useSpendStore';
+import { useSpendStore, useActiveProject, useProjectExpenses, useProjectRevenues, useNetMonthlyBurn } from '../../store/useSpendStore';
+import { downloadBalanceSheetExcel } from '../../utils/exportBalanceSheetExcel';
 import {
   exportToJSON,
   readJSONFile,
@@ -27,12 +29,40 @@ interface DataExportDropdownProps {
 
 export const DataExportDropdown: React.FC<DataExportDropdownProps> = ({ className = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeProject = useActiveProject();
   const expenses = useProjectExpenses(activeProject?.id ?? '');
+  const revenues = useProjectRevenues(activeProject?.id ?? '');
+  const { grossBurn, monthlyRevenue, netBurn, isDefaultAlive } = useNetMonthlyBurn(activeProject?.id);
   const { exportFullState, importFullState, resetToSeedData } = useSpendStore();
+
+  const handleExportExcel = async () => {
+    if (!activeProject || isExportingExcel) return;
+    setIsExportingExcel(true);
+    try {
+      await downloadBalanceSheetExcel({
+        project: activeProject,
+        expenses,
+        revenues,
+        currency: activeProject.currency ?? 'USD',
+        summary: {
+          grossBurn,
+          monthlyRevenue,
+          netBurn,
+          isDefaultAlive,
+        },
+      });
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Excel Balance Sheet export failed:', error);
+      alert('Failed to generate Excel Balance Sheet.');
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
 
   const handleExportJSON = () => {
     const state = exportFullState();
@@ -130,6 +160,28 @@ export const DataExportDropdown: React.FC<DataExportDropdownProps> = ({ classNam
             <div className="text-[10px] text-zinc-400">Full backup of projects & ledger</div>
           </div>
         </button>
+
+        {/* Export Excel Balance Sheet (Active Project Only) */}
+        {activeProject && (
+          <button
+            type="button"
+            onClick={handleExportExcel}
+            disabled={isExportingExcel}
+            className="w-full min-h-[44px] flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-emerald-300 hover:text-white hover:bg-emerald-500/15 border border-emerald-500/20 transition-colors cursor-pointer disabled:opacity-60"
+          >
+            {isExportingExcel ? (
+              <Loader2 size={14} className="animate-spin text-emerald-400 shrink-0" />
+            ) : (
+              <FileSpreadsheet size={14} className="text-emerald-400 shrink-0" />
+            )}
+            <div>
+              <div className="font-semibold">
+                {isExportingExcel ? 'Generating .xlsx...' : 'Export Balance Sheet (.xlsx)'}
+              </div>
+              <div className="text-[10px] text-zinc-400">Styled Balance Sheet & Ledger</div>
+            </div>
+          </button>
+        )}
 
         {/* Export CSV */}
         <button
