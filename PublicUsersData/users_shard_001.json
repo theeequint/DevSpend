@@ -2,7 +2,7 @@
   "shardId": "users_shard_001",
   "userCount": 3,
   "createdAt": "2026-01-01T00:00:00.000Z",
-  "updatedAt": "2026-11-11T17:29:08.246Z",
+  "updatedAt": "2026-11-11T17:30:01.211Z",
   "users": [
     {
       "id": "user_demo",
@@ -22,7 +22,7 @@
       "passwordHash": "ec33b538767c493d82b7a09e339ac5f900f9a8ccd884be3dfb100d0eb15c0ed7",
       "salt": "5f58d167e51845f2e6797d3545445876",
       "createdAt": "2026-11-08T16:01:48.900Z",
-      "updatedAt": "2026-11-11T17:29:08.246Z",
+      "updatedAt": "2026-11-11T17:30:01.211Z",
       "userDataSnapshot": {
         "projects": [
           {
@@ -87,7 +87,7 @@
             ],
             "currency": "USD",
             "monthlyBudgetCap": 100000,
-            "totalCashReserve": 800000,
+            "totalCashReserve": 850000,
             "expectedMonthlyUsers": 10000,
             "expectedMonthlyRevenue": 250000,
             "hourlyDevRate": 300,
@@ -672,9 +672,22 @@
             "date": "2024-07-01T00:00:00Z",
             "leadInvestor": "Founder Treasury",
             "addToCashReserve": true
+          },
+          {
+            "projectId": "proj_5ba71e79-788d-4eb3-8bbf-f515da2b8f84",
+            "ownerUserId": "user_3a568639-a735-4972-80c8-1a8b903d81a3",
+            "roundName": "Seed",
+            "amountRaised": 50000,
+            "preMoneyValuation": 1200000,
+            "postMoneyValuation": 1250000,
+            "equityDilutedPercent": 4,
+            "dilutionPercentage": 4,
+            "date": "2026-11-11T00:00:00.000Z",
+            "addToCashReserve": true,
+            "id": "rnd_155e79d1-1604-4a55-84eb-279b29abd327"
           }
         ],
-        "lastSyncedAt": "2026-11-11T17:29:08.201Z"
+        "lastSyncedAt": "2026-11-11T17:30:01.158Z"
       }
     },
     {
