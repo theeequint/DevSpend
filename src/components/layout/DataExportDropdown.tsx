@@ -94,7 +94,7 @@ export const DataExportDropdown: React.FC<DataExportDropdownProps> = ({ classNam
   };
 
   return (
-    <div className={`relative inline-block ${className}`}>
+    <div className={`relative inline-block shrink-0 ${className}`}>
       <button
         ref={triggerRef}
         type="button"

@@ -121,7 +121,7 @@ export const TopRightThemeSwitcher: React.FC<TopRightThemeSwitcherProps> = ({
   };
 
   return (
-    <div className={`relative inline-block ${className}`}>
+    <div className={`relative inline-block shrink-0 ${className}`}>
       {/* ── Top-Right Trigger Button ── */}
       <button
         ref={triggerRef}

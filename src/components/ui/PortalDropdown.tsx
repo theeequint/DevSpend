@@ -24,7 +24,8 @@ interface PortalDropdownProps {
 
 interface Coordinates {
   top: number;
-  left: number;
+  left?: number;
+  right?: number;
   maxHeight: number;
   ready: boolean;
 }
@@ -34,7 +35,7 @@ export const PortalDropdown: React.FC<PortalDropdownProps> = ({
   onClose,
   triggerRef,
   align = 'right',
-  offsetY = 6,
+  offsetY = 8,
   mobileBottomSheet = false,
   className = '',
   style,
@@ -47,7 +48,7 @@ export const PortalDropdown: React.FC<PortalDropdownProps> = ({
   );
   const [coords, setCoords] = useState<Coordinates>({
     top: 0,
-    left: 0,
+    right: 8,
     maxHeight: 400,
     ready: false,
   });
@@ -62,6 +63,7 @@ export const PortalDropdown: React.FC<PortalDropdownProps> = ({
       setCoords({
         top: 0,
         left: 0,
+        right: 0,
         maxHeight: Math.round(window.innerHeight * 0.88),
         ready: true,
       });
@@ -77,19 +79,21 @@ export const PortalDropdown: React.FC<PortalDropdownProps> = ({
     const viewportH = window.innerHeight;
     const edgeMargin = 8;
 
-    const panelWidth = panelEl?.offsetWidth || 220;
+    const panelWidth = panelEl?.offsetWidth || 200;
     const top = Math.max(edgeMargin, rect.bottom + offsetY);
     const maxHeight = Math.max(160, viewportH - top - edgeMargin);
 
-    let left = align === 'left' ? rect.left : rect.right - panelWidth;
-    if (left + panelWidth > viewportW - edgeMargin) {
-      left = viewportW - panelWidth - edgeMargin;
+    if (align === 'right') {
+      const desiredRight = Math.max(edgeMargin, viewportW - rect.right);
+      const maxRight = Math.max(edgeMargin, viewportW - panelWidth - edgeMargin);
+      const right = Math.min(desiredRight, maxRight);
+      setCoords({ top, right, maxHeight, ready: true });
+    } else {
+      const desiredLeft = Math.max(edgeMargin, rect.left);
+      const maxLeft = Math.max(edgeMargin, viewportW - panelWidth - edgeMargin);
+      const left = Math.min(desiredLeft, maxLeft);
+      setCoords({ top, left, maxHeight, ready: true });
     }
-    if (left < edgeMargin) {
-      left = edgeMargin;
-    }
-
-    setCoords({ top, left, maxHeight, ready: true });
   }, [align, offsetY, mobileBottomSheet, triggerRef]);
 
   useLayoutEffect(() => {
@@ -152,7 +156,8 @@ export const PortalDropdown: React.FC<PortalDropdownProps> = ({
             : {
                 position: 'fixed',
                 top: `${coords.top}px`,
-                left: `${coords.left}px`,
+                ...(coords.left !== undefined ? { left: `${coords.left}px` } : {}),
+                ...(coords.right !== undefined ? { right: `${coords.right}px` } : {}),
                 maxHeight: `${coords.maxHeight}px`,
                 zIndex: 9999,
                 visibility: coords.ready ? 'visible' : 'hidden',
