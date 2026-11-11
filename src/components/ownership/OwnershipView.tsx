@@ -917,7 +917,7 @@ export const OwnershipView: React.FC = () => {
 
       {/* ── Stakeholder Delete Confirmation ── */}
       {stakeholderToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 max-w-sm w-full shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-400">
               <div className="w-9 h-9 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
@@ -955,7 +955,7 @@ export const OwnershipView: React.FC = () => {
 
       {/* ── Funding Round Delete Confirmation ── */}
       {roundToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 max-w-sm w-full shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-400">
               <div className="w-9 h-9 rounded-full bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
