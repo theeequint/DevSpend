@@ -2,7 +2,7 @@
   "shardId": "users_shard_001",
   "userCount": 3,
   "createdAt": "2026-01-01T00:00:00.000Z",
-  "updatedAt": "2026-11-11T17:27:36.006Z",
+  "updatedAt": "2026-11-11T17:29:08.246Z",
   "users": [
     {
       "id": "user_demo",
@@ -22,7 +22,7 @@
       "passwordHash": "ec33b538767c493d82b7a09e339ac5f900f9a8ccd884be3dfb100d0eb15c0ed7",
       "salt": "5f58d167e51845f2e6797d3545445876",
       "createdAt": "2026-11-08T16:01:48.900Z",
-      "updatedAt": "2026-11-11T17:27:36.006Z",
+      "updatedAt": "2026-11-11T17:29:08.246Z",
       "userDataSnapshot": {
         "projects": [
           {
@@ -87,7 +87,7 @@
             ],
             "currency": "USD",
             "monthlyBudgetCap": 100000,
-            "totalCashReserve": 500000,
+            "totalCashReserve": 800000,
             "expectedMonthlyUsers": 10000,
             "expectedMonthlyRevenue": 250000,
             "hourlyDevRate": 300,
@@ -611,6 +611,26 @@
             "instrumentType": "common_stock",
             "votingRights": false,
             "notes": "Future co-founder reserve"
+          },
+          {
+            "projectId": "proj_5ba71e79-788d-4eb3-8bbf-f515da2b8f84",
+            "ownerUserId": "user_3a568639-a735-4972-80c8-1a8b903d81a3",
+            "name": "Founder",
+            "role": "founder",
+            "instrument": "common_stock",
+            "instrumentType": "common_stock",
+            "sharesOwned": 1000000000,
+            "totalInvestedAmount": 300000,
+            "ownershipPercentage": 100,
+            "hasVotingRights": true,
+            "votingRights": true,
+            "vestingSchedule": "4-year monthly with 1-year cliff",
+            "investmentRound": "Founding",
+            "roundName": "Founding",
+            "notes": "",
+            "dateJoined": "2026-11-11T00:00:00.000Z",
+            "investmentDate": "2026-11-11T00:00:00.000Z",
+            "id": "stk_1ee0c924-6957-4598-87ce-84d137a4000b"
           }
         ],
         "fundingRounds": [
@@ -654,7 +674,7 @@
             "addToCashReserve": true
           }
         ],
-        "lastSyncedAt": "2026-11-11T17:27:35.217Z"
+        "lastSyncedAt": "2026-11-11T17:29:08.201Z"
       }
     },
     {
