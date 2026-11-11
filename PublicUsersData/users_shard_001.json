@@ -2,7 +2,7 @@
   "shardId": "users_shard_001",
   "userCount": 3,
   "createdAt": "2026-01-01T00:00:00.000Z",
-  "updatedAt": "2026-11-11T18:01:42.909Z",
+  "updatedAt": "2026-11-11T18:02:18.668Z",
   "users": [
     {
       "id": "user_demo",
@@ -22,7 +22,7 @@
       "passwordHash": "ec33b538767c493d82b7a09e339ac5f900f9a8ccd884be3dfb100d0eb15c0ed7",
       "salt": "5f58d167e51845f2e6797d3545445876",
       "createdAt": "2026-11-08T16:01:48.900Z",
-      "updatedAt": "2026-11-11T18:01:42.909Z",
+      "updatedAt": "2026-11-11T18:02:18.668Z",
       "userDataSnapshot": {
         "projects": [
           {
@@ -434,6 +434,20 @@
             "isAiOptimized": false,
             "notes": "",
             "id": "exp_4906c621-55f8-46b7-9424-c25bbfe41dd1"
+          },
+          {
+            "projectId": "proj_5ba71e79-788d-4eb3-8bbf-f515da2b8f84",
+            "ownerUserId": "user_3a568639-a735-4972-80c8-1a8b903d81a3",
+            "title": "Namecheap Domain",
+            "vendor": "Namecheap",
+            "category": "domains_legal_misc",
+            "billingCycle": "annual",
+            "amount": 20000,
+            "date": "2026-11-11T00:00:00.000Z",
+            "isEssential": true,
+            "isAiOptimized": false,
+            "notes": "",
+            "id": "exp_9f8eebed-5c58-4181-8345-ce3587eb1891"
           }
         ],
         "revenues": [
@@ -749,7 +763,7 @@
             "id": "rnd_155e79d1-1604-4a55-84eb-279b29abd327"
           }
         ],
-        "lastSyncedAt": "2026-11-11T18:01:42.850Z"
+        "lastSyncedAt": "2026-11-11T18:02:18.614Z"
       }
     },
     {
