@@ -67,7 +67,7 @@ export const ExportExcelButton: React.FC<ExportExcelButtonProps> = ({
       type="button"
       onClick={handleExport}
       disabled={isExporting}
-      className={`min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all border shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-wait active:scale-[0.98] ${
+      className={`w-full sm:w-auto min-h-[44px] px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all border shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-wait active:scale-[0.98] ${
         justExported
           ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
           : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:border-emerald-400/50'
