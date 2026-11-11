@@ -3,7 +3,7 @@
 // Contextual JSON backups, CSV export & seed data restoration
 // ============================================================
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Download,
   Upload,
@@ -11,8 +11,6 @@ import {
   FileSpreadsheet,
   FileJson,
   ChevronDown,
-  Database,
-  Check,
 } from 'lucide-react';
 import { useSpendStore, useActiveProject, useProjectExpenses } from '../../store/useSpendStore';
 import {
@@ -21,6 +19,7 @@ import {
   exportToCSV,
   normalizeToMonthly,
 } from '../../utils/formatters';
+import PortalDropdown from '../ui/PortalDropdown';
 
 interface DataExportDropdownProps {
   className?: string;
@@ -28,23 +27,12 @@ interface DataExportDropdownProps {
 
 export const DataExportDropdown: React.FC<DataExportDropdownProps> = ({ className = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeProject = useActiveProject();
   const expenses = useProjectExpenses(activeProject?.id ?? '');
   const { exportFullState, importFullState, resetToSeedData } = useSpendStore();
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
 
   const handleExportJSON = () => {
     const state = exportFullState();
@@ -106,10 +94,11 @@ export const DataExportDropdown: React.FC<DataExportDropdownProps> = ({ classNam
   };
 
   return (
-    <div ref={dropdownRef} className={`relative inline-block ${className}`}>
+    <div className={`relative inline-block ${className}`}>
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prev) => !prev)}
         className="h-8 lg:h-9 px-2 lg:px-2.5 flex items-center gap-1.5 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-xs font-medium text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer shadow-sm shrink-0 whitespace-nowrap"
         title="Data Portability, Backups & CSV Export"
       >
@@ -118,64 +107,71 @@ export const DataExportDropdown: React.FC<DataExportDropdownProps> = ({ classNam
         <ChevronDown size={10} className="text-zinc-500 shrink-0" />
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-60 rounded-xl bg-[#121215] border border-zinc-700 shadow-2xl p-1.5 z-50 space-y-1 animate-in fade-in duration-150 font-sans text-xs">
-          <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 border-b border-zinc-800/80">
-            Data Portability Vault
-          </div>
-
-          {/* Export JSON */}
-          <button
-            onClick={handleExportJSON}
-            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-zinc-200 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-          >
-            <FileJson size={14} className="text-violet-400 shrink-0" />
-            <div>
-              <div className="font-semibold">Export JSON State</div>
-              <div className="text-[10px] text-zinc-400">Full backup of projects & ledger</div>
-            </div>
-          </button>
-
-          {/* Export CSV */}
-          <button
-            onClick={handleExportCSV}
-            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-zinc-200 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
-          >
-            <FileSpreadsheet size={14} className="text-emerald-400 shrink-0" />
-            <div>
-              <div className="font-semibold">Export Ledger CSV</div>
-              <div className="text-[10px] text-zinc-400">Accountant-ready spreadsheet</div>
-            </div>
-          </button>
-
-          {/* Import JSON */}
-          <label className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-zinc-200 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer">
-            <Upload size={14} className="text-cyan-400 shrink-0" />
-            <div>
-              <div className="font-semibold">Import JSON State</div>
-              <div className="text-[10px] text-zinc-400">Restore from saved snapshot</div>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleImportFile}
-              className="hidden"
-            />
-          </label>
-
-          {/* Reset Demo */}
-          <div className="pt-1 border-t border-zinc-800/80">
-            <button
-              onClick={handleReset}
-              className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
-            >
-              <RotateCcw size={13} className="shrink-0" />
-              <div className="font-medium text-[11px]">Reset to Demo State</div>
-            </button>
-          </div>
+      <PortalDropdown
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        triggerRef={triggerRef}
+        align="right"
+        className="w-60 max-w-[calc(100vw-16px)] rounded-xl bg-[#121215]/95 backdrop-blur-md border border-zinc-700/80 shadow-2xl p-1.5 space-y-1 animate-in fade-in duration-150 font-sans text-xs overflow-y-auto"
+      >
+        <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 border-b border-zinc-800/80">
+          Data Portability Vault
         </div>
-      )}
+
+        {/* Export JSON */}
+        <button
+          type="button"
+          onClick={handleExportJSON}
+          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-zinc-200 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+        >
+          <FileJson size={14} className="text-violet-400 shrink-0" />
+          <div>
+            <div className="font-semibold">Export JSON State</div>
+            <div className="text-[10px] text-zinc-400">Full backup of projects & ledger</div>
+          </div>
+        </button>
+
+        {/* Export CSV */}
+        <button
+          type="button"
+          onClick={handleExportCSV}
+          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-zinc-200 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+        >
+          <FileSpreadsheet size={14} className="text-emerald-400 shrink-0" />
+          <div>
+            <div className="font-semibold">Export Ledger CSV</div>
+            <div className="text-[10px] text-zinc-400">Accountant-ready spreadsheet</div>
+          </div>
+        </button>
+
+        {/* Import JSON */}
+        <label className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left text-zinc-200 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer">
+          <Upload size={14} className="text-cyan-400 shrink-0" />
+          <div>
+            <div className="font-semibold">Import JSON State</div>
+            <div className="text-[10px] text-zinc-400">Restore from saved snapshot</div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleImportFile}
+            className="hidden"
+          />
+        </label>
+
+        {/* Reset Demo */}
+        <div className="pt-1 border-t border-zinc-800/80">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-left text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
+          >
+            <RotateCcw size={13} className="shrink-0" />
+            <div className="font-medium text-[11px]">Reset to Demo State</div>
+          </button>
+        </div>
+      </PortalDropdown>
     </div>
   );
 };
