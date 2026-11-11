@@ -86,9 +86,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-[100] w-full max-w-full border-b border-zinc-800/80 bg-[#09090B]/95 backdrop-blur-md font-sans overflow-visible">
-      <div className="flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 overflow-x-auto lg:overflow-visible no-scrollbar whitespace-nowrap w-full max-w-[1920px] mx-auto h-14">
+      <div className="overflow-x-auto no-scrollbar whitespace-nowrap overscroll-x-contain flex items-center justify-between gap-2 sm:gap-3 w-full max-w-full px-3 sm:px-4 h-14">
         {/* Zone 1: Left Brand / Logo + Project Switcher */}
-        <div className="flex items-center gap-2 lg:gap-2.5 shrink-0 min-w-0">
+        <div className="flex items-center gap-2 lg:gap-2.5 shrink-0">
           {/* Logo */}
           <div
             onClick={() => setActiveView('home')}
@@ -107,7 +107,7 @@ export const Navbar: React.FC = () => {
 
           {/* Project Switcher Dropdown */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 ref={projectTriggerRef}
                 type="button"
@@ -224,7 +224,7 @@ export const Navbar: React.FC = () => {
 
         {/* Zone 2: Center Navigation Tabs (Project-Gated) */}
         {hasActiveProject ? (
-          <nav className="flex items-center gap-1 lg:gap-1.5 shrink-0 py-1 px-1 bg-zinc-900/90 border border-zinc-800/80 rounded-xl overflow-x-auto no-scrollbar">
+          <nav className="flex items-center gap-1 lg:gap-1.5 shrink-0 py-1 px-1 bg-zinc-900/90 border border-zinc-800/80 rounded-xl">
             {navItems.map((item) => {
               const isActive = activeView === item.id;
               return (
