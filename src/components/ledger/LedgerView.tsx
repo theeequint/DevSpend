@@ -38,6 +38,7 @@ import RevenueTable from './RevenueTable';
 import CashflowTable from './CashflowTable';
 import AddExpenseModal from './AddExpenseModal';
 import AddRevenueModal from './AddRevenueModal';
+import ExportExcelButton from '../ui/ExportExcelButton';
 
 export const LedgerView: React.FC = () => {
   const activeProject = useActiveProject();
@@ -204,6 +205,9 @@ export const LedgerView: React.FC = () => {
             <ArrowUpRight size={14} className="stroke-[2.5] text-rose-400" />
             <span>+ Add Expense</span>
           </button>
+
+          {/* Export Executive Excel Balance Sheet */}
+          <ExportExcelButton />
 
           {/* Contextual Export CSV */}
           <button
